@@ -17,7 +17,10 @@ import {
   Sparkles,
   ArrowRight,
   CheckCircle2,
-  GraduationCap
+  GraduationCap,
+  PlayCircle,
+  Compass,
+  CheckCircle
 } from 'lucide-react';
 
 export default function App() {
@@ -38,7 +41,7 @@ export default function App() {
     pin: ''
   });
 
-  // User Stats & Activity Tracker (initialized to clean slate for each new student)
+  // User Stats & Activity Tracker
   const [stats, setStats] = useState({
     streak: 0,
     accuracy: 0,
@@ -91,14 +94,14 @@ export default function App() {
     if (type === 'grammar_check') {
       newDetail = `Run Grammar Check on text (${data.words} words) - Score: ${data.score}%`;
       newStats.drills += 1;
-      newStats.accuracy = Math.round((newStats.accuracy * 9 + data.score) / 10);
+      newStats.accuracy = stats.accuracy === 0 ? data.score : Math.round((stats.accuracy * 4 + data.score) / 5);
     } else if (type === 'pronunciation_check') {
       newDetail = `Speech practice on "${data.scenario}" - Match rate: ${data.score}%`;
-      newStats.accuracy = Math.round((newStats.accuracy * 9 + data.score) / 10);
+      newStats.accuracy = stats.accuracy === 0 ? data.score : Math.round((stats.accuracy * 4 + data.score) / 5);
     } else if (type === 'completed_scenario') {
       newDetail = `Completed Conversation Module: "${data.title}"`;
       newStats.conversations += 1;
-      newStats.streak += 1;
+      newStats.streak = stats.streak === 0 ? 1 : stats.streak + 1;
     }
 
     const newAct = {
@@ -410,7 +413,7 @@ export default function App() {
             </div>
             <div>
               <h2 style={{ fontSize: '1.15rem', margin: 0, fontWeight: 700, color: 'var(--text-primary)' }}>Tamilan Anna</h2>
-              <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--accent-secondary)', fontWeight: 'bold' }}>AI Classroom</span>
+              <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-secondary)', fontWeight: 'bold' }}>AI Classroom</span>
             </div>
           </div>
 
@@ -510,6 +513,84 @@ export default function App() {
                   <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent-secondary)' }}>
                     🎯 TIP: {guide.recommendation}
                   </span>
+                </div>
+              </div>
+            </div>
+
+            {/* CURRICULUM SYLLABUS PATHWAYS GRID */}
+            <div className="glass-panel" style={{ padding: '24px', background: 'white' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <Compass className="icon-cyan" size={20} />
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-primary)' }}>Interactive Syllabus Pathways</h3>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                {/* Module 1 */}
+                <div className="syllabus-module-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span className="module-label">MODULE 1</span>
+                    {stats.drills > 0 ? (
+                      <span className="module-status-completed"><CheckCircle size={14} /> Completed</span>
+                    ) : (
+                      <span className="module-status-pending">Not Started</span>
+                    )}
+                  </div>
+                  <h4 className="module-title">Alphabets & Modifiers</h4>
+                  <p className="module-desc">Type letters mother (அம்மா) using combined vowel modifier keys.</p>
+                  <button onClick={() => setActiveTab('grammar')} className="module-action-btn">
+                    Open Keyboard <PlayCircle size={14} />
+                  </button>
+                </div>
+
+                {/* Module 2 */}
+                <div className="syllabus-module-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span className="module-label">MODULE 2</span>
+                    {stats.conversations > 0 ? (
+                      <span className="module-status-completed"><CheckCircle size={14} /> Completed</span>
+                    ) : (
+                      <span className="module-status-pending">Not Started</span>
+                    )}
+                  </div>
+                  <h4 className="module-title">First Conversation</h4>
+                  <p className="module-desc">Introduce yourself and speak standard Tamil greetings aloud.</p>
+                  <button onClick={() => setActiveTab('conversation')} className="module-action-btn">
+                    Start Dialogue <PlayCircle size={14} />
+                  </button>
+                </div>
+
+                {/* Module 3 */}
+                <div className="syllabus-module-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span className="module-label">MODULE 3</span>
+                    {stats.accuracy >= 80 ? (
+                      <span className="module-status-completed"><CheckCircle size={14} /> Completed</span>
+                    ) : (
+                      <span className="module-status-pending">Not Started</span>
+                    )}
+                  </div>
+                  <h4 className="module-title">Restaurant Order</h4>
+                  <p className="module-desc">Order a masala dosa & ask for less spicy configurations.</p>
+                  <button onClick={() => setActiveTab('conversation')} className="module-action-btn">
+                    Start Dialogue <PlayCircle size={14} />
+                  </button>
+                </div>
+
+                {/* Module 4 */}
+                <div className="syllabus-module-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span className="module-label">MODULE 4</span>
+                    {stats.drills > 2 ? (
+                      <span className="module-status-completed"><CheckCircle size={14} /> Completed</span>
+                    ) : (
+                      <span className="module-status-pending">Not Started</span>
+                    )}
+                  </div>
+                  <h4 className="module-title">Grammar Rules clinic</h4>
+                  <p className="module-desc">Check common doubled rules (வலிமிகல் rules) for letters.</p>
+                  <button onClick={() => setActiveTab('grammar')} className="module-action-btn">
+                    Check Syntax <PlayCircle size={14} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -729,6 +810,70 @@ export default function App() {
         .text-purple { color: var(--accent-primary); }
         .text-blue { color: var(--accent-secondary); }
         .text-green { color: var(--success); }
+
+        /* Syllabus Module Styling */
+        .syllabus-module-card {
+          border: 1px solid #cbd5e1;
+          padding: 16px;
+          border-radius: 4px;
+          display: flex;
+          flex-direction: column;
+          background: #ffffff;
+        }
+        .syllabus-module-card:hover {
+          border-color: var(--accent-primary);
+        }
+        .module-label {
+          font-size: 0.7rem;
+          color: var(--text-muted);
+          font-weight: bold;
+        }
+        .module-status-completed {
+          font-size: 0.7rem;
+          color: var(--success);
+          font-weight: bold;
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
+        }
+        .module-status-pending {
+          font-size: 0.7rem;
+          color: var(--text-muted);
+          font-weight: 500;
+        }
+        .module-title {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin: 4px 0;
+        }
+        .module-desc {
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          margin: 0 0 16px 0;
+          flex-grow: 1;
+          line-height: 1.4;
+        }
+        .module-action-btn {
+          border: 1px solid #cbd5e1;
+          background: #ffffff;
+          color: var(--text-primary);
+          padding: 6px 12px;
+          font-size: 0.75rem;
+          cursor: pointer;
+          border-radius: 4px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          font-weight: 500;
+          transition: all 0.15s;
+        }
+        .module-action-btn:hover {
+          background: var(--accent-primary);
+          border-color: var(--accent-primary);
+          color: white;
+        }
       `}</style>
     </div>
   );
