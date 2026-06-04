@@ -38,19 +38,15 @@ export default function App() {
     pin: ''
   });
 
-  // User Stats & Activity Tracker
+  // User Stats & Activity Tracker (initialized to clean slate for each new student)
   const [stats, setStats] = useState({
-    streak: 3,
-    accuracy: 88,
-    drills: 14,
-    conversations: 4
+    streak: 0,
+    accuracy: 0,
+    drills: 0,
+    conversations: 0
   });
 
-  const [activities, setActivities] = useState([
-    { id: 1, type: 'grammar_check', timestamp: 'Today, 2:40 PM', detail: 'Analyzed spelling of "தமிழ்ப்" - 100% Correct' },
-    { id: 2, type: 'pronunciation_check', timestamp: 'Yesterday, 6:15 PM', detail: 'Completed "Greetings" turn 1 - 92% Accurately' },
-    { id: 3, type: 'completed_scenario', timestamp: '2 days ago', detail: 'Finished "Greetings & Introduction" module' }
-  ]);
+  const [activities, setActivities] = useState([]);
 
   const [feedbackList, setFeedbackList] = useState([]);
   const [feedbackForm, setFeedbackForm] = useState({
@@ -544,15 +540,21 @@ export default function App() {
               <div className="glass-panel" style={{ padding: '20px', background: 'white' }}>
                 <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Performance Activity Logs</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {activities.map(act => (
-                    <div key={act.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(0,0,0,0.01)', border: '1px solid rgba(0,0,0,0.04)', borderRadius: '8px', fontSize: '0.85rem' }}>
-                      <div>
-                        <span style={{ color: 'var(--text-primary)', display: 'block' }}>{act.detail}</span>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Type: {act.type.replace('_', ' ')}</span>
-                      </div>
-                      <span style={{ color: 'var(--accent-secondary)', fontSize: '0.75rem' }}>{act.timestamp}</span>
+                  {activities.length === 0 ? (
+                    <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      No activity logged yet. Start practicing conversations or check spelling to build your performance cards!
                     </div>
-                  ))}
+                  ) : (
+                    activities.map(act => (
+                      <div key={act.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(0,0,0,0.01)', border: '1px solid rgba(0,0,0,0.04)', borderRadius: '8px', fontSize: '0.85rem' }}>
+                        <div>
+                          <span style={{ color: 'var(--text-primary)', display: 'block' }}>{act.detail}</span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Type: {act.type.replace('_', ' ')}</span>
+                        </div>
+                        <span style={{ color: 'var(--accent-secondary)', fontSize: '0.75rem' }}>{act.timestamp}</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
