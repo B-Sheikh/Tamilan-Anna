@@ -24,8 +24,8 @@ import {
 export default function App() {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('tamilan_gemini_key') || '');
-  const [showSettings, setShowSettings] = useState(false);
+  // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
+  const apiKey = '';
   
   // Custom user level profile state
   const [loginForm, setLoginForm] = useState({
@@ -82,11 +82,7 @@ export default function App() {
     setActiveTab('dashboard');
   };
 
-  const saveApiKey = (key) => {
-    setApiKey(key);
-    localStorage.setItem('tamilan_gemini_key', key);
-    setShowSettings(false);
-  };
+
 
   // Activity logger callback for subcomponents
   const handleLogActivity = (type, data) => {
@@ -287,17 +283,6 @@ export default function App() {
         {/* Footer controls inside sidebar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <button 
-            onClick={() => {
-              setShowSettings(true);
-              setActiveTab('');
-            }} 
-            className={`nav-btn ${showSettings ? 'nav-active' : ''}`}
-            style={{ width: '100%', justifyContent: 'flex-start' }}
-          >
-            <Settings size={18} /> Gemini Settings
-          </button>
-          
-          <button 
             onClick={handleLogout} 
             className="nav-btn-logout"
             style={{ width: '100%', justifyContent: 'flex-start' }}
@@ -314,7 +299,7 @@ export default function App() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid var(--panel-border)', paddingBottom: '16px' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 600 }}>
-              {showSettings ? 'Developer settings' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1) + ' workspace'}
+              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1) + ' workspace'}
             </h1>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               Tamilan Anna Classroom v1.0 • Connected to {apiKey ? 'Gemini Live' : 'Simulated AI local engine'}
@@ -334,7 +319,7 @@ export default function App() {
         </div>
 
         {/* MAIN TAB SWITCHER */}
-        {!showSettings && activeTab === 'dashboard' && (
+        {activeTab === 'dashboard' && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             
             {/* Custom learning guide banner based on user level */}
@@ -469,76 +454,16 @@ export default function App() {
           </div>
         )}
 
-        {!showSettings && activeTab === 'conversation' && (
+        {activeTab === 'conversation' && (
           <Conversations apiKey={apiKey} onLogActivity={handleLogActivity} />
         )}
 
-        {!showSettings && activeTab === 'grammar' && (
+        {activeTab === 'grammar' && (
           <SpellingGrammar apiKey={apiKey} onLogActivity={handleLogActivity} />
         )}
 
-        {!showSettings && activeTab === 'videos' && (
+        {activeTab === 'videos' && (
           <VideoSection />
-        )}
-
-        {/* DEVELOPER SETTINGS MODAL/PANEL */}
-        {showSettings && (
-          <div className="glass-panel animate-fade-in" style={{ padding: '28px', maxWidth: '600px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--accent-primary)' }}>
-              <Sliders size={24} />
-              <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Developer Gemini API Setup</h3>
-            </div>
-            
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.45', marginBottom: '20px' }}>
-              We use <strong>gemini-1.5-flash</strong> for smart spelling analysis, grammatical rule checking, and contextual response suggestion. 
-              Paste your personal Google AI Studio developer API key below. The key is stored 100% locally in your browser cache.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>GEMINI API KEY:</label>
-                <input 
-                  type="password" 
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="form-input"
-                  placeholder="AIzaSy..." 
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' }}>
-                <button 
-                  onClick={() => setShowSettings(false)} 
-                  className="btn-secondary"
-                  style={{ padding: '8px 16px', fontSize: '0.85rem' }}
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => saveApiKey(apiKey)} 
-                  className="btn-primary"
-                  style={{ padding: '8px 16px', fontSize: '0.85rem' }}
-                >
-                  Save API Key
-                </button>
-              </div>
-
-              {apiKey && (
-                <div style={{ borderTop: '1px solid var(--panel-border)', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--success)' }}>
-                    ✓ Key configured and saved!
-                  </span>
-                  <button 
-                    onClick={() => saveApiKey('')} 
-                    className="btn-secondary" 
-                    style={{ padding: '4px 10px', fontSize: '0.75rem', color: 'var(--error)', borderColor: 'rgba(244,63,94,0.2)' }}
-                  >
-                    Remove Key
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
         )}
       </main>
 
