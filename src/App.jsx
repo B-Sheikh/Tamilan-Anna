@@ -157,12 +157,17 @@ export default function App() {
     }
   };
 
-  // 1. LANDING PAGE (Clean, educational, split-layout)
+  // 1. LANDING PAGE (Clean, educational, split-layout with visual depth)
   if (!user && !showLogin) {
     return (
-      <div className="animate-fade-in" style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px' }}>
+      <div className="animate-fade-in" style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px', position: 'relative', overflow: 'hidden' }}>
+        
+        {/* Soft Colorful Backdrop Glazes */}
+        <div style={{ position: 'absolute', top: '5%', left: '5%', width: '400px', height: '400px', background: 'rgba(99, 102, 241, 0.07)', filter: 'blur(100px)', borderRadius: '50%', zIndex: -1 }}></div>
+        <div style={{ position: 'absolute', bottom: '15%', right: '5%', width: '350px', height: '350px', background: 'rgba(13, 148, 136, 0.08)', filter: 'blur(90px)', borderRadius: '50%', zIndex: -1 }}></div>
+
         {/* Navigation Bar */}
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '80px' }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px', position: 'relative', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ color: 'var(--accent-primary)', display: 'flex', alignItems: 'center' }}>
               <BookOpen size={24} />
@@ -177,92 +182,106 @@ export default function App() {
         </header>
 
         {/* Hero Section Split Layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '60px', alignItems: 'center', minHeight: '450px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '50px', alignItems: 'center', minHeight: '500px', position: 'relative', zIndex: 10 }}>
           {/* Left Column: Hand-crafted Copywriting */}
           <div style={{ textAlign: 'left' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent-secondary)', textTransform: 'uppercase', letterSpacing: '1.2px', display: 'block', marginBottom: '16px' }}>
               A friendly companion for Tamil students
             </span>
-            <h1 style={{ fontSize: '2.8rem', color: 'var(--text-primary)', margin: '0 0 20px 0', fontWeight: 700, lineHeight: '1.15', letterSpacing: '-0.5px' }}>
+            <h1 style={{ fontSize: '3rem', color: 'var(--text-primary)', margin: '0 0 20px 0', fontWeight: 700, lineHeight: '1.15', letterSpacing: '-0.5px' }}>
               Learn Tamil.<br />Speak, write & practice.
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.55', marginBottom: '32px', maxWidth: '480px' }}>
-              A calm and quiet study space built to practice Tamil conversations with pronunciation checks, correct spelling mistakes, and access structured lesson videos.
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '32px', maxWidth: '480px' }}>
+              A quiet and clean digital space built to practice Tamil conversations with pronunciation feedback, correct spelling mistakes, and access structured TVA lessons.
             </p>
-            <button onClick={() => setShowLogin(true)} className="btn-primary" style={{ padding: '14px 28px', fontSize: '0.95rem' }}>
-              Create Study Card <ArrowRight size={16} />
-            </button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setShowLogin(true)} className="btn-primary" style={{ padding: '14px 28px', fontSize: '0.95rem' }}>
+                Create Study Card <ArrowRight size={16} />
+              </button>
+            </div>
           </div>
 
-          {/* Right Column: Tactile Interactive Preview Card */}
-          <div className="glass-panel" style={{ padding: '24px', background: 'white', borderRadius: '16px', border: '1px solid rgba(99, 102, 241, 0.12)', boxShadow: '0 15px 35px rgba(99, 102, 241, 0.05)' }}>
-            <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>LIVE CLASSROOM DEMO</span>
-              <span className="dot-pulse"></span>
-            </div>
-
-            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '16px', textAlign: 'center' }}>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 6px 0' }}>Try typing combining vowel characters below:</p>
-              <input 
-                type="text" 
-                value={previewText}
-                readOnly
-                style={{ fontSize: '1.6rem', fontWeight: 'bold', color: 'var(--text-primary)', textAlign: 'center', width: '100%', border: 'none', background: 'transparent', outline: 'none' }}
+          {/* Right Column: Tactile Interactive Preview Card & Hero Image */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            
+            {/* Hand-crafted Flat illustration */}
+            <div style={{ textAlign: 'center' }}>
+              <img 
+                src="/hero.png" 
+                alt="Student learning illustration" 
+                style={{ width: '100%', maxWidth: '340px', height: 'auto', borderRadius: '4px', border: '1px solid #cbd5e1' }}
               />
             </div>
 
-            {/* Clickable Keyboard Keys preview */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                {['க', 'ம', 'த', 'ந'].map(char => (
-                  <button 
-                    key={char} 
-                    onClick={() => setPreviewText(prev => prev + char)}
-                    className="demo-key"
-                  >
-                    {char}
-                  </button>
-                ))}
+            {/* Tactile Interactive Preview Card */}
+            <div className="glass-panel" style={{ padding: '20px', background: 'white', borderRadius: '4px', border: '1px solid rgba(99, 102, 241, 0.12)', boxShadow: '0 8px 30px rgba(99, 102, 241, 0.03)' }}>
+              <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '10px', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>LIVE KEYBOARD PRACTICE DEMO</span>
+                <span className="dot-pulse"></span>
               </div>
-              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                {['ா', 'ி', 'ு', '்'].map(mod => (
-                  <button 
-                    key={mod} 
-                    onClick={() => setPreviewText(prev => prev + mod)}
-                    className="demo-key modifier"
-                  >
-                    {mod}
-                  </button>
-                ))}
-              </div>
-              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginTop: '4px' }}>
-                <button 
-                  onClick={() => setPreviewText('')} 
-                  className="demo-key clear-btn"
-                  style={{ flexGrow: 1, fontSize: '0.75rem', padding: '6px' }}
-                >
-                  Clear Demo
-                </button>
-                <button 
-                  onClick={() => setPreviewText('வணக்கம்')} 
-                  className="demo-key submit-demo-btn"
-                  style={{ flexGrow: 2, fontSize: '0.75rem', padding: '6px', color: 'white', background: 'var(--accent-primary)', border: 'none' }}
-                >
-                  Spell check!
-                </button>
-              </div>
-            </div>
 
-            {previewText === 'வணக்கம்' && (
-              <div className="animate-fade-in" style={{ marginTop: '14px', background: 'rgba(16, 185, 129, 0.08)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.15)', fontSize: '0.8rem', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>✓ Spell-check: "வணக்கம்" is 100% correct!</span>
+              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '4px', marginBottom: '14px', textAlign: 'center', border: '1px solid #cbd5e1' }}>
+                <input 
+                  type="text" 
+                  value={previewText}
+                  readOnly
+                  style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', textAlign: 'center', width: '100%', border: 'none', background: 'transparent', outline: 'none' }}
+                />
               </div>
-            )}
+
+              {/* Clickable Keyboard Keys preview */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                  {['க', 'ம', 'த', 'ந'].map(char => (
+                    <button 
+                      key={char} 
+                      onClick={() => setPreviewText(prev => prev + char)}
+                      className="demo-key"
+                    >
+                      {char}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                  {['ா', 'ி', 'ு', '்'].map(mod => (
+                    <button 
+                      key={mod} 
+                      onClick={() => setPreviewText(prev => prev + mod)}
+                      className="demo-key modifier"
+                    >
+                      {mod}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginTop: '4px' }}>
+                  <button 
+                    onClick={() => setPreviewText('')} 
+                    className="demo-key clear-btn"
+                    style={{ flexGrow: 1, fontSize: '0.75rem', padding: '6px 12px' }}
+                  >
+                    Clear
+                  </button>
+                  <button 
+                    onClick={() => setPreviewText('வணக்கம்')} 
+                    className="demo-key submit-demo-btn"
+                    style={{ flexGrow: 2, fontSize: '0.75rem', padding: '6px 12px', color: 'white', background: 'var(--accent-primary)', border: 'none' }}
+                  >
+                    Spell check!
+                  </button>
+                </div>
+              </div>
+
+              {previewText === 'வணக்கம்' && (
+                <div className="animate-fade-in" style={{ marginTop: '12px', background: 'rgba(16, 185, 129, 0.08)', padding: '10px 12px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.15)', fontSize: '0.8rem', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>✓ Spell-check: "வணக்கம்" is 100% correct!</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Small Trust Badges / TVA link */}
-        <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', marginTop: '80px', borderTop: '1px solid #f1f5f9', paddingTop: '32px' }}>
+        <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', marginTop: '80px', borderTop: '1px solid #f1f5f9', paddingTop: '32px', position: 'relative', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
             <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>100% Free</span> Learning Tools
           </div>
@@ -276,29 +295,29 @@ export default function App() {
 
         <style>{`
           .demo-key {
-            padding: 8px 12px;
-            border: 1px solid #e2e8f0;
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
             background: white;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
-            font-size: 1rem;
-            transition: all 0.15s ease;
+            font-size: 0.95rem;
+            transition: all 0.1s ease;
           }
           .demo-key:hover {
             border-color: var(--accent-primary);
-            background: rgba(99, 102, 241, 0.03);
+            background: #f1f5f9;
           }
           .demo-key.modifier {
             background: #f8fafc;
-            border-color: rgba(99,102,241,0.1);
+            border-color: rgba(99,102,241,0.15);
           }
           .demo-key.modifier:hover {
             border-color: var(--accent-secondary);
-            background: rgba(13, 148, 136, 0.03);
+            background: #f1f5f9;
           }
           .demo-key.clear-btn {
-            border-color: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.2);
             color: var(--error);
           }
           .demo-key.clear-btn:hover {
