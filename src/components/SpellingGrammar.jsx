@@ -176,7 +176,7 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
               className="form-input"
               placeholder="தமிழ்ப் உரையை இங்கே தட்டச்சு செய்யவும்... (Type or use the keyboard below)"
               rows={6}
-              style={{ width: '100%', resize: 'vertical', fontFamily: 'var(--font-sans)', fontSize: '1.1rem', background: 'rgba(0,0,0,0.2)' }}
+              style={{ width: '100%', resize: 'vertical', fontFamily: 'var(--font-sans)', fontSize: '1.1rem', background: '#ffffff' }}
             />
 
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
@@ -204,8 +204,8 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
 
         {/* Results Area */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="glass-panel" style={{ padding: '20px', minHeight: '300px' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', color: 'var(--text-primary)', borderBottom: '1px solid var(--panel-border)', paddingBottom: '10px' }}>
+          <div className="glass-panel" style={{ padding: '20px', minHeight: '300px', background: 'white' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', color: 'var(--text-primary)', borderBottom: '1px solid var(--panel-border)', paddingBottom: '10px', fontWeight: 600 }}>
               AI Feedback & Suggestions
             </h3>
 
@@ -222,14 +222,14 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
                 <p style={{ fontSize: '0.95rem' }}>Write Tamil text and click check to trigger AI diagnostics.</p>
                 {!apiKey && (
                   <p style={{ fontSize: '0.75rem', marginTop: '10px', color: 'var(--warning)' }}>
-                    * Running in simulated mode. Enter a Gemini Key for complete AI checking.
+                    * Running in simulated mode. Add a Gemini Key directly to App.jsx to test live arbitrary inputs.
                   </p>
                 )}
               </div>
             )}
 
             {error && (
-              <div style={{ display: 'flex', gap: '10px', padding: '12px', background: 'rgba(244, 63, 94, 0.15)', border: '1px solid var(--error)', borderRadius: '12px', marginBottom: '16px', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', gap: '10px', padding: '12px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid var(--error)', borderRadius: '4px', marginBottom: '16px', fontSize: '0.85rem' }}>
                 <AlertCircle className="icon-red" size={18} />
                 <span>{error}</span>
               </div>
@@ -238,15 +238,15 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
             {!loading && results && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Score Summary */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.03)', padding: '12px 16px', borderRadius: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px 16px', borderRadius: '4px' }}>
                   <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>QUALITY SCORE</span>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>QUALITY SCORE</span>
                     <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: results.errors?.length === 0 ? 'var(--success)' : 'var(--warning)' }}>
                       {Math.max(0, 100 - (results.errors?.length || 0) * 20)}%
                     </span>
                   </div>
                   <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'right' }}>ISSUES DETECTED</span>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'right', fontWeight: 600 }}>ISSUES DETECTED</span>
                     <span style={{ display: 'block', fontSize: '1.2rem', fontWeight: 'bold', textAlign: 'right' }}>
                       {results.errors?.length || 0}
                     </span>
@@ -254,13 +254,13 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
                 </div>
 
                 {/* Corrected Preview */}
-                <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '16px', borderRadius: '12px' }}>
+                <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.15)', padding: '16px', borderRadius: '4px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <span style={{ fontSize: '0.8rem', color: 'var(--success)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <CheckCircle size={14} /> Corrected Output:
                     </span>
                     {results.correctedText !== text && (
-                      <button onClick={handleApplyCorrection} className="btn-secondary" style={{ padding: '2px 8px', fontSize: '0.75rem' }}>
+                      <button onClick={handleApplyCorrection} className="btn-secondary" style={{ padding: '2px 8px', fontSize: '0.75rem', borderRadius: '4px' }}>
                         Apply Correction
                       </button>
                     )}
@@ -307,10 +307,10 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
         }
         .active-btn {
           border-color: var(--accent-primary) !important;
-          background: rgba(139, 92, 246, 0.1) !important;
+          background: var(--accent-primary-glow) !important;
         }
         .spinner {
-          border: 3px solid rgba(255,255,255,0.05);
+          border: 3px solid rgba(0,0,0,0.05);
           width: 36px;
           height: 36px;
           border-radius: 50%;
@@ -322,7 +322,8 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
           100% { transform: rotate(360deg); }
         }
         .error-item {
-          background: rgba(255, 255, 255, 0.02);
+          background: #fafafa;
+          border: 1px solid #e2e8f0;
           padding: 10px 12px;
           border-radius: 4px;
         }

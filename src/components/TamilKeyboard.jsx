@@ -166,36 +166,33 @@ export default function TamilKeyboard({ onKeyPress, targetInputRef }) {
 
       <style>{`
         .key-btn {
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          border-radius: 4px;
           color: var(--text-primary);
           padding: 8px 10px;
           min-width: 40px;
           font-size: 1.1rem;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.15s ease;
+          transition: all 0.1s ease;
           display: flex;
           align-items: center;
           justify-content: center;
           user-select: none;
         }
         .key-btn:hover {
-          background: rgba(255, 255, 255, 0.15);
-          border-color: rgba(255, 255, 255, 0.2);
-          transform: scale(1.05);
+          background: #f1f5f9;
+          border-color: #94a3b8;
+          transform: none;
         }
         .vowel-key:hover {
-          box-shadow: 0 0 8px rgba(6, 182, 212, 0.3);
           border-color: var(--accent-secondary);
         }
         .consonant-key:hover {
-          box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
           border-color: var(--accent-primary);
         }
         .modifier-key:hover {
-          box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
           border-color: var(--success);
         }
         .space-key {

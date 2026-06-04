@@ -407,10 +407,10 @@ export default function Conversations({ apiKey, onLogActivity }) {
           border-left: 3px solid transparent;
         }
         .scenario-card:hover {
-          background: rgba(255,255,255,0.04);
+          background: rgba(0,0,0,0.02);
         }
         .active-scenario {
-          background: rgba(139, 92, 246, 0.06);
+          background: rgba(99, 102, 241, 0.05);
           border-color: var(--accent-primary);
           border-left: 3px solid var(--accent-primary);
         }
@@ -418,56 +418,53 @@ export default function Conversations({ apiKey, onLogActivity }) {
           font-size: 0.7rem;
           font-weight: bold;
           padding: 2px 6px;
-          border-radius: 4px;
+          border-radius: 2px;
           text-transform: uppercase;
         }
         .diff-badge.beginner {
-          background: rgba(16, 185, 129, 0.15);
+          background: rgba(16, 185, 129, 0.1);
           color: var(--success);
         }
         .diff-badge.intermediate {
-          background: rgba(245, 158, 11, 0.15);
+          background: rgba(245, 158, 11, 0.1);
           color: var(--warning);
         }
         .ai-avatar, .user-avatar {
           width: 40px;
           height: 40px;
-          border-radius: 50%;
+          border-radius: 4px;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: bold;
           font-size: 0.8rem;
           flex-shrink: 0;
+          color: white;
         }
         .ai-avatar {
-          background: linear-gradient(135deg, var(--accent-secondary) 0%, #0891b2 100%);
-          color: white;
+          background: var(--accent-secondary);
         }
         .user-avatar {
-          background: linear-gradient(135deg, var(--accent-primary) 0%, #6d28d9 100%);
-          color: white;
+          background: var(--accent-primary);
         }
         .chat-bubble {
           padding: 16px;
-          border-radius: 16px;
+          border-radius: 4px;
           max-width: 80%;
           border: 1px solid var(--panel-border);
         }
         .ai-bubble {
-          background: rgba(6, 182, 212, 0.04);
-          border-top-left-radius: 0;
+          background: rgba(13, 148, 136, 0.03);
         }
         .user-bubble {
-          background: rgba(139, 92, 246, 0.04);
-          border-top-right-radius: 0;
+          background: rgba(99, 102, 241, 0.03);
         }
         .voice-btn {
-          background: rgba(255, 255, 255, 0.04);
+          background: #ffffff;
           border: 1px solid var(--panel-border);
           color: var(--text-primary);
           padding: 2px 8px;
-          border-radius: 12px;
+          border-radius: 4px;
           cursor: pointer;
           font-size: 0.75rem;
           display: flex;
@@ -476,13 +473,13 @@ export default function Conversations({ apiKey, onLogActivity }) {
           transition: all 0.2s;
         }
         .voice-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: rgba(255,255,255,0.2);
+          background: #f8fafc;
+          border-color: #94a3b8;
         }
         .tamil-text {
           font-size: 1.25rem;
           font-weight: 500;
-          color: white;
+          color: var(--text-primary);
           margin: 4px 0;
         }
         .translit-text {
@@ -497,13 +494,13 @@ export default function Conversations({ apiKey, onLogActivity }) {
           margin: 0;
         }
         .speech-station {
-          background: rgba(0, 0, 0, 0.15);
+          background: #f8fafc;
           border: 1px solid var(--panel-border);
           padding: 20px;
-          border-radius: 16px;
+          border-radius: 4px;
         }
         .record-btn {
-          animation: pulseGlow 2s infinite;
+          animation: none;
         }
         .listening-visualizer {
           display: flex;
@@ -537,10 +534,10 @@ export default function Conversations({ apiKey, onLogActivity }) {
           100% { transform: scaleY(1.2); }
         }
         .pron-results-container {
-          background: rgba(255,255,255,0.02);
+          background: #ffffff;
           border: 1px solid var(--panel-border);
           padding: 16px;
-          border-radius: 12px;
+          border-radius: 4px;
         }
       `}</style>
     </div>
