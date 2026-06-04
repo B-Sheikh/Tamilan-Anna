@@ -16,10 +16,7 @@ import {
   LogOut,
   Sparkles,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2,
-  Users,
-  Compass,
   GraduationCap
 } from 'lucide-react';
 
@@ -27,6 +24,9 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false); // Toggle between Landing Page & Login Page
   const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // Interactive preview state for landing page
+  const [previewText, setPreviewText] = useState('வணக்');
   
   // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
   const apiKey = '';
@@ -158,104 +158,166 @@ export default function App() {
     }
   };
 
-  // 1. LANDING PAGE
+  // 1. LANDING PAGE (Clean, educational, split-layout)
   if (!user && !showLogin) {
     return (
-      <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-        {/* Header Branding */}
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ background: 'linear-gradient(135deg, var(--accent-primary) 0%, #4f46e5 100%)', color: 'white', padding: '10px', borderRadius: '12px' }}>
-              <BookOpen size={28} />
+      <div className="animate-fade-in" style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px' }}>
+        {/* Navigation Bar */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '80px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ color: 'var(--accent-primary)', display: 'flex', alignItems: 'center' }}>
+              <BookOpen size={24} />
             </div>
-            <div>
-              <h2 style={{ fontSize: '1.4rem', margin: 0, fontWeight: 700, color: 'var(--text-primary)' }}>Tamilan Anna</h2>
-              <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-secondary)', fontWeight: 'bold' }}>AI Tamil Classroom</span>
-            </div>
+            <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--text-primary)' }}>
+              Tamilan Anna
+            </h2>
           </div>
-          <button onClick={() => setShowLogin(true)} className="btn-primary">
-            Enter Classroom <ArrowRight size={16} />
+          <button onClick={() => setShowLogin(true)} className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
+            Enter Classroom
           </button>
         </header>
 
-        {/* Hero Section */}
-        <section style={{ textAlign: 'center', padding: '60px 0', maxWidth: '800px', margin: '0 auto' }}>
-          <span style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Transform Your Tamil Learning
-          </span>
-          <h1 style={{ fontSize: '3.2rem', color: 'var(--text-primary)', margin: '20px 0 16px 0', fontWeight: 800, lineHeight: '1.2' }}>
-            Master Tamil Conversations, Spelling, and Grammar with AI
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.15rem', lineHeight: '1.6', marginBottom: '32px' }}>
-            An intuitive study ecosystem customized for school students and language lovers. Speak with our speech recognition tutor, check spelling using AI, and learn with standard Virtual Academy lessons.
-          </p>
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-            <button onClick={() => setShowLogin(true)} className="btn-primary" style={{ padding: '14px 32px', fontSize: '1.05rem' }}>
-              Start Learning Now <Sparkles size={18} />
+        {/* Hero Section Split Layout */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '60px', alignItems: 'center', minHeight: '450px' }}>
+          {/* Left Column: Hand-crafted Copywriting */}
+          <div style={{ textAlign: 'left' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent-secondary)', textTransform: 'uppercase', letterSpacing: '1.2px', display: 'block', marginBottom: '16px' }}>
+              A friendly companion for Tamil students
+            </span>
+            <h1 style={{ fontSize: '2.8rem', color: 'var(--text-primary)', margin: '0 0 20px 0', fontWeight: 700, lineHeight: '1.15', letterSpacing: '-0.5px' }}>
+              Learn Tamil.<br />Speak, write & practice.
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.55', marginBottom: '32px', maxWidth: '480px' }}>
+              A calm and quiet study space built to practice Tamil conversations with pronunciation checks, correct spelling mistakes, and access structured lesson videos.
+            </p>
+            <button onClick={() => setShowLogin(true)} className="btn-primary" style={{ padding: '14px 28px', fontSize: '0.95rem' }}>
+              Create Study Card <ArrowRight size={16} />
             </button>
-            <a href="https://www.youtube.com/@TamilVirtualAcademy/videos" target="_blank" rel="noreferrer" className="btn-secondary" style={{ padding: '14px 32px', fontSize: '1.05rem' }}>
-              Watch Academy Videos
-            </a>
-          </div>
-        </section>
-
-        {/* Features Grid */}
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px', marginTop: '40px' }}>
-          <div className="glass-panel feature-card" style={{ padding: '30px', textAlign: 'left' }}>
-            <div className="icon-wrapper purple">
-              <MessageSquare size={24} />
-            </div>
-            <h3 style={{ fontSize: '1.2rem', margin: '16px 0 8px 0', fontWeight: 600 }}>Pronunciation Coach</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-              Speak directly to the platform. Our Speech Recognition system evaluates your speech accuracy and gives helpful guidance.
-            </p>
           </div>
 
-          <div className="glass-panel feature-card" style={{ padding: '30px', textAlign: 'left' }}>
-            <div className="icon-wrapper teal">
-              <SpellCheck size={24} />
+          {/* Right Column: Tactile Interactive Preview Card */}
+          <div className="glass-panel" style={{ padding: '24px', background: 'white', borderRadius: '16px', border: '1px solid rgba(99, 102, 241, 0.12)', boxShadow: '0 15px 35px rgba(99, 102, 241, 0.05)' }}>
+            <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>LIVE CLASSROOM DEMO</span>
+              <span className="dot-pulse"></span>
             </div>
-            <h3 style={{ fontSize: '1.2rem', margin: '16px 0 8px 0', fontWeight: 600 }}>Spelling & Grammar Clinic</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-              Enter Tamil sentences to highlight errors, get corrections, and view grammar rules instantly using Gemini AI integrations.
-            </p>
-          </div>
 
-          <div className="glass-panel feature-card" style={{ padding: '30px', textAlign: 'left' }}>
-            <div className="icon-wrapper orange">
-              <BookOpen size={24} />
+            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '16px', textAlign: 'center' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 6px 0' }}>Try typing combining vowel characters below:</p>
+              <input 
+                type="text" 
+                value={previewText}
+                readOnly
+                style={{ fontSize: '1.6rem', fontWeight: 'bold', color: 'var(--text-primary)', textAlign: 'center', width: '100%', border: 'none', background: 'transparent', outline: 'none' }}
+              />
             </div>
-            <h3 style={{ fontSize: '1.2rem', margin: '16px 0 8px 0', fontWeight: 600 }}>On-screen Keyboard</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-              No Tamil keyboard installed? No problem. Use our built-in vowel, consonant, and modifier touch keyboard mapping.
-            </p>
-          </div>
 
-          <div className="glass-panel feature-card" style={{ padding: '30px', textAlign: 'left' }}>
-            <div className="icon-wrapper blue">
-              <Video size={24} />
+            {/* Clickable Keyboard Keys preview */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                {['க', 'ம', 'த', 'ந'].map(char => (
+                  <button 
+                    key={char} 
+                    onClick={() => setPreviewText(prev => prev + char)}
+                    className="demo-key"
+                  >
+                    {char}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                {['ா', 'ி', 'ு', '்'].map(mod => (
+                  <button 
+                    key={mod} 
+                    onClick={() => setPreviewText(prev => prev + mod)}
+                    className="demo-key modifier"
+                  >
+                    {mod}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginTop: '4px' }}>
+                <button 
+                  onClick={() => setPreviewText('')} 
+                  className="demo-key clear-btn"
+                  style={{ flexGrow: 1, fontSize: '0.75rem', padding: '6px' }}
+                >
+                  Clear Demo
+                </button>
+                <button 
+                  onClick={() => setPreviewText('வணக்கம்')} 
+                  className="demo-key submit-demo-btn"
+                  style={{ flexGrow: 2, fontSize: '0.75rem', padding: '6px', color: 'white', background: 'var(--accent-primary)', border: 'none' }}
+                >
+                  Spell check!
+                </button>
+              </div>
             </div>
-            <h3 style={{ fontSize: '1.2rem', margin: '16px 0 8px 0', fontWeight: 600 }}>TVA Video Academy</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-              Enjoy direct, filterable access to online lectures hosted by the official Tamil Virtual Academy lessons.
-            </p>
+
+            {previewText === 'வணக்கம்' && (
+              <div className="animate-fade-in" style={{ marginTop: '14px', background: 'rgba(16, 185, 129, 0.08)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.15)', fontSize: '0.8rem', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>✓ Spell-check: "வணக்கம்" is 100% correct!</span>
+              </div>
+            )}
           </div>
-        </section>
+        </div>
+
+        {/* Small Trust Badges / TVA link */}
+        <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', marginTop: '80px', borderTop: '1px solid #f1f5f9', paddingTop: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>100% Free</span> Learning Tools
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Voice feedback</span> with Web Speech API
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Official TVA</span> Video Library
+          </div>
+        </div>
 
         <style>{`
-          .icon-wrapper {
-            display: inline-flex;
-            padding: 12px;
-            border-radius: 12px;
-            color: white;
+          .demo-key {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.15s ease;
           }
-          .icon-wrapper.purple { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
-          .icon-wrapper.teal { background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); }
-          .icon-wrapper.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-          .icon-wrapper.blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
-          .feature-card:hover {
-            transform: translateY(-5px);
+          .demo-key:hover {
             border-color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.03);
+          }
+          .demo-key.modifier {
+            background: #f8fafc;
+            border-color: rgba(99,102,241,0.1);
+          }
+          .demo-key.modifier:hover {
+            border-color: var(--accent-secondary);
+            background: rgba(13, 148, 136, 0.03);
+          }
+          .demo-key.clear-btn {
+            border-color: rgba(239, 68, 68, 0.15);
+            color: var(--error);
+          }
+          .demo-key.clear-btn:hover {
+            background: rgba(239, 68, 68, 0.04);
+          }
+          .dot-pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulseDot 1.5s infinite;
+          }
+          @keyframes pulseDot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
           }
         `}</style>
       </div>
