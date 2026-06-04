@@ -4,33 +4,37 @@ import SpellingGrammar from './components/SpellingGrammar';
 import VideoSection from './components/VideoSection';
 import { 
   BookOpen, 
-  Settings, 
   MessageSquare, 
   Video, 
   SpellCheck, 
   BarChart3, 
-  User, 
   Lock, 
   Award, 
   Flame, 
   Target, 
-  HelpCircle, 
   Send,
   LogOut,
-  Sliders,
-  CheckCircle2
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  Users,
+  Compass,
+  GraduationCap
 } from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const [showLogin, setShowLogin] = useState(false); // Toggle between Landing Page & Login Page
   const [activeTab, setActiveTab] = useState('dashboard');
+  
   // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
   const apiKey = '';
-  
+
   // Custom user level profile state
   const [loginForm, setLoginForm] = useState({
     name: '',
-    level: 'beginner', // beginner, intermediate, advanced
+    level: 'beginner',
     pin: ''
   });
 
@@ -79,10 +83,9 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem('tamilan_user');
     setUser(null);
+    setShowLogin(false);
     setActiveTab('dashboard');
   };
-
-
 
   // Activity logger callback for subcomponents
   const handleLogActivity = (type, data) => {
@@ -155,39 +158,143 @@ export default function App() {
     }
   };
 
-  // LOGIN PAGE
-  if (!user) {
+  // 1. LANDING PAGE
+  if (!user && !showLogin) {
+    return (
+      <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+        {/* Header Branding */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: 'linear-gradient(135deg, var(--accent-primary) 0%, #4f46e5 100%)', color: 'white', padding: '10px', borderRadius: '12px' }}>
+              <BookOpen size={28} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.4rem', margin: 0, fontWeight: 700, color: 'var(--text-primary)' }}>Tamilan Anna</h2>
+              <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-secondary)', fontWeight: 'bold' }}>AI Tamil Classroom</span>
+            </div>
+          </div>
+          <button onClick={() => setShowLogin(true)} className="btn-primary">
+            Enter Classroom <ArrowRight size={16} />
+          </button>
+        </header>
+
+        {/* Hero Section */}
+        <section style={{ textAlign: 'center', padding: '60px 0', maxWidth: '800px', margin: '0 auto' }}>
+          <span style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Transform Your Tamil Learning
+          </span>
+          <h1 style={{ fontSize: '3.2rem', color: 'var(--text-primary)', margin: '20px 0 16px 0', fontWeight: 800, lineHeight: '1.2' }}>
+            Master Tamil Conversations, Spelling, and Grammar with AI
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.15rem', lineHeight: '1.6', marginBottom: '32px' }}>
+            An intuitive study ecosystem customized for school students and language lovers. Speak with our speech recognition tutor, check spelling using AI, and learn with standard Virtual Academy lessons.
+          </p>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+            <button onClick={() => setShowLogin(true)} className="btn-primary" style={{ padding: '14px 32px', fontSize: '1.05rem' }}>
+              Start Learning Now <Sparkles size={18} />
+            </button>
+            <a href="https://www.youtube.com/@TamilVirtualAcademy/videos" target="_blank" rel="noreferrer" className="btn-secondary" style={{ padding: '14px 32px', fontSize: '1.05rem' }}>
+              Watch Academy Videos
+            </a>
+          </div>
+        </section>
+
+        {/* Features Grid */}
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px', marginTop: '40px' }}>
+          <div className="glass-panel feature-card" style={{ padding: '30px', textAlign: 'left' }}>
+            <div className="icon-wrapper purple">
+              <MessageSquare size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.2rem', margin: '16px 0 8px 0', fontWeight: 600 }}>Pronunciation Coach</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+              Speak directly to the platform. Our Speech Recognition system evaluates your speech accuracy and gives helpful guidance.
+            </p>
+          </div>
+
+          <div className="glass-panel feature-card" style={{ padding: '30px', textAlign: 'left' }}>
+            <div className="icon-wrapper teal">
+              <SpellCheck size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.2rem', margin: '16px 0 8px 0', fontWeight: 600 }}>Spelling & Grammar Clinic</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+              Enter Tamil sentences to highlight errors, get corrections, and view grammar rules instantly using Gemini AI integrations.
+            </p>
+          </div>
+
+          <div className="glass-panel feature-card" style={{ padding: '30px', textAlign: 'left' }}>
+            <div className="icon-wrapper orange">
+              <BookOpen size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.2rem', margin: '16px 0 8px 0', fontWeight: 600 }}>On-screen Keyboard</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+              No Tamil keyboard installed? No problem. Use our built-in vowel, consonant, and modifier touch keyboard mapping.
+            </p>
+          </div>
+
+          <div className="glass-panel feature-card" style={{ padding: '30px', textAlign: 'left' }}>
+            <div className="icon-wrapper blue">
+              <Video size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.2rem', margin: '16px 0 8px 0', fontWeight: 600 }}>TVA Video Academy</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+              Enjoy direct, filterable access to online lectures hosted by the official Tamil Virtual Academy lessons.
+            </p>
+          </div>
+        </section>
+
+        <style>{`
+          .icon-wrapper {
+            display: inline-flex;
+            padding: 12px;
+            border-radius: 12px;
+            color: white;
+          }
+          .icon-wrapper.purple { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+          .icon-wrapper.teal { background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); }
+          .icon-wrapper.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+          .icon-wrapper.blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+          .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // 2. LOGIN PAGE
+  if (!user && showLogin) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px' }}>
-        <form onSubmit={handleLogin} className="glass-panel login-card animate-fade-in" style={{ padding: '40px', width: '100%', maxWidth: '450px' }}>
+        <form onSubmit={handleLogin} className="glass-panel login-card animate-fade-in" style={{ padding: '40px', width: '100%', maxWidth: '450px', background: 'white' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <div className="logo-glow" style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'var(--accent-primary-glow)', color: 'var(--accent-primary)', marginBottom: '16px' }}>
-              <BookOpen size={48} />
+              <GraduationCap size={44} />
             </div>
-            <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>Tamilan Anna</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>AI-powered interactive Tamil learning sanctuary</p>
+            <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--text-primary)', fontWeight: 700 }}>Welcome Learner</h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Create your customized student learning card</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>YOUR NAME</label>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>YOUR NAME</label>
               <input 
                 type="text" 
                 value={loginForm.name} 
                 onChange={(e) => setLoginForm({ ...loginForm, name: e.target.value })}
                 required 
                 className="form-input" 
-                placeholder="Enter your name..." 
+                placeholder="Enter your student name..." 
               />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>YOUR PROFICIENCY LEVEL</label>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>YOUR TAMIL LEVEL</label>
               <select 
                 value={loginForm.level}
                 onChange={(e) => setLoginForm({ ...loginForm, level: e.target.value })}
                 className="form-input"
-                style={{ background: '#0f172a' }}
+                style={{ background: 'white' }}
               >
                 <option value="beginner">Beginner (தொடக்க நிலை)</option>
                 <option value="intermediate">Intermediate (இடைநிலை)</option>
@@ -196,26 +303,31 @@ export default function App() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>SECRET PIN (Optional)</label>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>STUDENT PIN (Optional)</label>
               <input 
                 type="password" 
                 value={loginForm.pin}
                 onChange={(e) => setLoginForm({ ...loginForm, pin: e.target.value })}
                 className="form-input" 
-                placeholder="Choose any pin code..." 
+                placeholder="Pick any pin code..." 
               />
             </div>
 
-            <button type="submit" className="btn-primary" style={{ justifyContent: 'center', marginTop: '10px' }}>
-              Enter Learning Sanctuary <Lock size={16} />
-            </button>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+              <button type="button" onClick={() => setShowLogin(false)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center' }}>
+                Back
+              </button>
+              <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                Enter Sanctuary
+              </button>
+            </div>
           </div>
         </form>
 
         <style>{`
           .login-card {
-            border-color: rgba(139, 92, 246, 0.2);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border-color: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
           }
           .logo-glow {
             animation: pulseGlow 3s infinite;
@@ -227,31 +339,31 @@ export default function App() {
 
   const guide = getLevelGuide();
 
-  // MAIN DASHBOARD LAYOUT
+  // 3. CLASSROOM DASHBOARD VIEW
   return (
     <div className="layout-container">
       {/* SIDEBAR NAVIGATION */}
-      <aside style={{ background: 'rgba(15, 23, 42, 0.6)', borderRight: '1px solid var(--panel-border)', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <aside style={{ background: '#ffffff', borderRight: '1px solid var(--panel-border)', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
           {/* Logo Branding */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ color: 'var(--accent-primary)', background: 'var(--accent-primary-glow)', padding: '8px', borderRadius: '10px' }}>
-              <BookOpen size={24} />
+              <BookOpen size={22} />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700, letterSpacing: '-0.5px' }}>Tamilan Anna</h2>
-              <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--accent-secondary)', fontWeight: 'bold' }}>AI ACADEMY</span>
+              <h2 style={{ fontSize: '1.15rem', margin: 0, fontWeight: 700, color: 'var(--text-primary)' }}>Tamilan Anna</h2>
+              <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--accent-secondary)', fontWeight: 'bold' }}>AI Classroom</span>
             </div>
           </div>
 
           {/* User Profile Mini */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '12px', border: '1px solid var(--panel-border)' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(99, 102, 241, 0.04)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.08)' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', color: 'white' }}>
               {user.name.charAt(0).toUpperCase()}
             </div>
             <div style={{ overflow: 'hidden' }}>
-              <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{user.name}</h4>
-              <span className={`badge-level ${user.level}`} style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>{user.level}</span>
+              <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{user.name}</h4>
+              <span className={`badge-level ${user.level}`} style={{ fontSize: '0.7rem', textTransform: 'capitalize' }}>{user.level}</span>
             </div>
           </div>
 
@@ -269,9 +381,8 @@ export default function App() {
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id);
-                    setShowSettings(false);
                   }}
-                  className={`nav-btn ${activeTab === item.id && !showSettings ? 'nav-active' : ''}`}
+                  className={`nav-btn ${activeTab === item.id ? 'nav-active' : ''}`}
                 >
                   <Icon size={18} /> {item.label}
                 </button>
@@ -298,7 +409,7 @@ export default function App() {
         {/* TOP STATUS BAR */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid var(--panel-border)', paddingBottom: '16px' }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 600 }}>
+            <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1) + ' workspace'}
             </h1>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -323,13 +434,13 @@ export default function App() {
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             
             {/* Custom learning guide banner based on user level */}
-            <div className="glass-panel guide-banner" style={{ padding: '24px', borderLeft: '4px solid var(--accent-primary)' }}>
+            <div className="glass-panel guide-banner" style={{ padding: '24px', borderLeft: '4px solid var(--accent-primary)', background: 'white' }}>
               <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
                 <div style={{ padding: '12px', background: 'var(--accent-primary-glow)', borderRadius: '12px', color: 'var(--accent-primary)' }}>
                   <Target size={28} />
                 </div>
                 <div>
-                  <h3 style={{ margin: '0 0 6px 0', fontSize: '1.25rem' }}>{guide.title}</h3>
+                  <h3 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 600 }}>{guide.title}</h3>
                   <p style={{ margin: '0 0 12px 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                     Based on your profile, we customized the syllabus path below:
                   </p>
@@ -347,19 +458,19 @@ export default function App() {
 
             {/* Quick Stats Dashboard */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-              <div className="glass-panel stat-box">
+              <div className="glass-panel stat-box" style={{ background: 'white' }}>
                 <span className="stat-label">Daily Streak</span>
                 <span className="stat-val text-orange">{stats.streak} Days</span>
               </div>
-              <div className="glass-panel stat-box">
+              <div className="glass-panel stat-box" style={{ background: 'white' }}>
                 <span className="stat-label">Pronunciation Score</span>
                 <span className="stat-val text-purple">{stats.accuracy}%</span>
               </div>
-              <div className="glass-panel stat-box">
+              <div className="glass-panel stat-box" style={{ background: 'white' }}>
                 <span className="stat-label">Grammar Drills Done</span>
                 <span className="stat-val text-blue">{stats.drills} completed</span>
               </div>
-              <div className="glass-panel stat-box">
+              <div className="glass-panel stat-box" style={{ background: 'white' }}>
                 <span className="stat-label">Dialogues Finished</span>
                 <span className="stat-val text-green">{stats.conversations} modules</span>
               </div>
@@ -368,11 +479,11 @@ export default function App() {
             {/* Bottom Row - Split: Activity Log / Feedback */}
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
               {/* Activity feeds */}
-              <div className="glass-panel" style={{ padding: '20px' }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 600 }}>Performance Activity Logs</h3>
+              <div className="glass-panel" style={{ padding: '20px', background: 'white' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Performance Activity Logs</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {activities.map(act => (
-                    <div key={act.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.85rem' }}>
+                    <div key={act.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(0,0,0,0.01)', border: '1px solid rgba(0,0,0,0.04)', borderRadius: '8px', fontSize: '0.85rem' }}>
                       <div>
                         <span style={{ color: 'var(--text-primary)', display: 'block' }}>{act.detail}</span>
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Type: {act.type.replace('_', ' ')}</span>
@@ -384,8 +495,8 @@ export default function App() {
               </div>
 
               {/* Real-time Content Feedback */}
-              <div className="glass-panel" style={{ padding: '20px' }}>
-                <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: 600 }}>Submit Content Feedback</h3>
+              <div className="glass-panel" style={{ padding: '20px', background: 'white' }}>
+                <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Submit Content Feedback</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '16px' }}>
                   Report translations errors, bad pronunciation audio, or keyboard mapping bugs.
                 </p>
@@ -404,7 +515,7 @@ export default function App() {
                         value={feedbackForm.category}
                         onChange={(e) => setFeedbackForm({ ...feedbackForm, category: e.target.value })}
                         className="form-input"
-                        style={{ padding: '8px 12px', fontSize: '0.85rem', background: '#0f172a' }}
+                        style={{ padding: '8px 12px', fontSize: '0.85rem', background: 'white' }}
                       >
                         <option value="translation">Translation error</option>
                         <option value="pronunciation">Pronunciation feedback</option>
@@ -438,7 +549,7 @@ export default function App() {
                     <h5 style={{ margin: '0 0 8px 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>PREVIOUS REVIEWS:</h5>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {feedbackList.map(item => (
-                        <div key={item.id} style={{ padding: '8px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', fontSize: '0.75rem' }}>
+                        <div key={item.id} style={{ padding: '8px', background: 'rgba(0,0,0,0.02)', borderRadius: '6px', fontSize: '0.75rem' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontWeight: 'bold' }}>
                             <span style={{ color: 'var(--accent-secondary)' }}>[{item.category.toUpperCase()}]</span>
                             <span style={{ color: 'var(--text-muted)' }}>{item.timestamp}</span>
@@ -482,15 +593,16 @@ export default function App() {
           font-weight: 500;
           cursor: pointer;
           transition: all 0.2s;
+          width: 100%;
         }
         .nav-btn:hover {
-          background: rgba(255,255,255,0.04);
-          color: var(--text-primary);
+          background: rgba(99, 102, 241, 0.05);
+          color: var(--accent-primary);
         }
         .nav-active {
           background: var(--accent-primary-glow) !important;
           color: var(--accent-primary) !important;
-          border: 1px solid rgba(139, 92, 246, 0.2) !important;
+          border: 1px solid rgba(99, 102, 241, 0.18) !important;
         }
         .nav-btn-logout {
           display: flex;
@@ -506,7 +618,7 @@ export default function App() {
           transition: all 0.2s;
         }
         .nav-btn-logout:hover {
-          background: rgba(244, 63, 94, 0.1);
+          background: rgba(239, 68, 68, 0.08);
           color: var(--error);
         }
         .badge-level {
@@ -515,15 +627,15 @@ export default function App() {
           border-radius: 4px;
           font-weight: bold;
         }
-        .badge-level.beginner { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-        .badge-level.intermediate { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-        .badge-level.advanced { background: rgba(139, 92, 246, 0.15); color: var(--accent-primary); }
+        .badge-level.beginner { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-level.intermediate { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-level.advanced { background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); }
 
         .mini-stat-card {
           display: flex;
           align-items: center;
           gap: 6px;
-          background: rgba(255, 255, 255, 0.02);
+          background: white;
           border: 1px solid var(--panel-border);
           padding: 6px 12px;
           border-radius: 10px;
