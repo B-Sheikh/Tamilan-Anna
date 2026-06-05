@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GraduationCap, Volume2, Sparkles, BookOpen, Layers, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function TamilBasics() {
@@ -52,21 +52,35 @@ export default function TamilBasics() {
   const vowelSigns = ['', 'ா', 'ி', 'ீ', 'ு', 'ூ', 'ெ', 'ே', 'ை', 'ொ', 'ோ', 'ௌ'];
   const vowelSounds = ['a', 'aa', 'i', 'ee', 'u', 'uu', 'e', 'ae', 'ai', 'o', 'oo', 'au'];
 
+  // Pre-load voices on mount to avoid async load delay
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      const handleVoices = () => { window.speechSynthesis.getVoices(); };
+      window.speechSynthesis.addEventListener('voiceschanged', handleVoices);
+      return () => window.speechSynthesis.removeEventListener('voiceschanged', handleVoices);
+    }
+  }, []);
+
   // Speech helper
-  const speakLetter = (text, isTamilText = true) => {
+  const speakLetter = (text, soundTranslit = '') => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+      const voices = window.speechSynthesis.getVoices();
+      const taVoice = voices.find(v => v.lang.includes('ta') || v.lang.includes('TA'));
       const utterance = new SpeechSynthesisUtterance(text);
-      if (isTamilText) {
-        const voices = window.speechSynthesis.getVoices();
-        const taVoice = voices.find(v => v.lang.includes('ta') || v.lang.includes('TA'));
-        if (taVoice) utterance.voice = taVoice;
+      if (taVoice) {
+        utterance.voice = taVoice;
         utterance.lang = 'ta-IN';
+        utterance.rate = 0.75;
+        window.speechSynthesis.speak(utterance);
       } else {
-        utterance.lang = 'en-US';
+        const fallbackText = soundTranslit || text;
+        const fallbackUtterance = new SpeechSynthesisUtterance(fallbackText);
+        fallbackUtterance.lang = 'en-US';
+        fallbackUtterance.rate = 0.8;
+        window.speechSynthesis.speak(fallbackUtterance);
       }
-      utterance.rate = 0.8;
-      window.speechSynthesis.speak(utterance);
     }
   };
 
@@ -234,7 +248,7 @@ export default function TamilBasics() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Sound: "{v.sound}"</span>
                     <button 
-                      onClick={() => speakLetter(v.char)} 
+                      onClick={() => speakLetter(v.char, v.sound)} 
                       className="module-action-btn" 
                       style={{ padding: '4px 6px', border: 'none', background: 'var(--accent-primary-glow)' }}
                       title="Listen"
@@ -267,7 +281,7 @@ export default function TamilBasics() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Sound: "{c.sound}"</span>
                     <button 
-                      onClick={() => speakLetter(c.char)} 
+                      onClick={() => speakLetter(c.char, c.sound.split(' ')[0])} 
                       className="module-action-btn" 
                       style={{ padding: '4px 6px', border: 'none', background: 'rgba(13, 148, 136, 0.08)' }}
                       title="Listen"
@@ -374,7 +388,7 @@ export default function TamilBasics() {
             </div>
 
             <button
-              onClick={() => speakLetter(getCombinedLetter(selectedConsonant, selectedVowel))}
+              onClick={() => speakLetter(getCombinedLetter(selectedConsonant, selectedVowel), consonants[selectedConsonant].sound.split(' ')[0] + vowelSounds[selectedVowel])}
               className="btn-primary"
               style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '4px' }}
             >
