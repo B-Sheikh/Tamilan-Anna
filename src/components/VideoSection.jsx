@@ -6,46 +6,32 @@ export default function VideoSection() {
 
   const videos = [
     {
-      id: 'D0T_eF1P3wM',
-      title: 'Tamil Alphabets (உயிரெழுத்துக்கள்) - Primary Lessons',
-      category: 'alphabets',
-      description: 'Learn the primary Tamil vowels and pronunciation patterns step-by-step.',
-      duration: '12:45'
-    },
-    {
-      id: 'z-aW7G-W6Xo',
-      title: 'Consonant Letters (மெய்யெழுத்துக்கள்) - Learning Tamil',
-      category: 'alphabets',
-      description: 'Explore the 18 basic consonants and how they combine with vowels.',
-      duration: '15:20'
-    },
-    {
-      id: 'xGla24w-2W8',
-      title: 'Common Daily Tamil Conversations & Greetings',
-      category: 'conversations',
-      description: 'Useful daily conversation phrases for beginners interacting in Tamil Nadu.',
-      duration: '18:10'
-    },
-    {
-      id: 'qC_qP83B6f4',
-      title: 'Tamil Grammar (இலக்கணம்) - Intro to Rules',
+      id: 'ujc6jifKxk0',
+      title: 'Tamil Virtual Academy - Introduction Lesson',
       category: 'grammar',
-      description: 'Understanding Tamil grammar, word formation, and basic structures.',
-      duration: '22:30'
+      description: 'Understanding the overview of structured Tamil courses from the Academy.',
+      duration: '11:20'
     },
     {
-      id: 'yJcMebXhA_k',
-      title: 'Advanced Tamil Conversations & Sentence Structuring',
+      id: 'gC9c7v1sYqQ',
+      title: 'Learn Tamil Lesson 1 (உயிரெழுத்துக்கள்) - Vowels',
+      category: 'alphabets',
+      description: 'Explore the basics of Tamil writing starting with fundamental vowel systems.',
+      duration: '14:15'
+    },
+    {
+      id: 'Gw76_fnOOkM',
+      title: 'Tamil Alphabets & Basics - Pebbles Education',
+      category: 'alphabets',
+      description: 'A friendly, student-focused animated guide to Tamil alphabet sounds and letters.',
+      duration: '18:40'
+    },
+    {
+      id: 'l_a6a0qB72s',
+      title: 'Common Conversational Tamil Sentences & Dialogs',
       category: 'conversations',
-      description: 'Refine your conversational skills with complex compound sentence patterns.',
-      duration: '25:15'
-    },
-    {
-      id: 'vP1w47H013s',
-      title: 'Tamil Spelling Rules & Orthography (எழுத்துப்பிழை நீக்கம்)',
-      category: 'grammar',
-      description: 'How to write Tamil without spelling mistakes (La, Lla, Zha rules).',
-      duration: '14:40'
+      description: 'Daily spoken sentences for beginners, from greeting people to asking directions.',
+      duration: '12:50'
     }
   ];
 

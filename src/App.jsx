@@ -58,6 +58,71 @@ export default function App() {
   });
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
+  // AI Tutor Bot State Definitions
+  const [tutorOpen, setTutorOpen] = useState(false);
+  const [tutorQuery, setTutorQuery] = useState('');
+  const [tutorMessages, setTutorMessages] = useState([
+    { role: 'assistant', text: 'வணக்கம்! I am Tutor Anna (தமிழன் அண்ணா), your virtual Tamil companion. Ask me any doubts about spelling, grammar, or conversations!' }
+  ]);
+  const [tutorLoading, setTutorLoading] = useState(false);
+
+  const predefinedPrompts = [
+    { label: "Quiz me on Vowels", query: "Give me a quick 3-question quiz on Tamil vowel letters. Ask one question at a time and wait for my response." },
+    { label: "Explain 'zha' (ழ)", query: "Explain the difference between 'la' (ல), 'lla' (ள), and the special retroflex 'zha' (ழ) sound in Tamil, with examples." },
+    { label: "Translate challenge", query: "Give me a sentence in English to translate into Tamil, and evaluate my response." },
+    { label: "Common greetings", query: "What are 5 essential greetings in Tamil with their meanings?" }
+  ];
+
+  const handleTutorSubmit = async (queryText) => {
+    if (!queryText.trim()) return;
+
+    const userMsg = { role: 'user', text: queryText };
+    setTutorMessages(prev => [...prev, userMsg]);
+    setTutorQuery('');
+    setTutorLoading(true);
+
+    if (!apiKey) {
+      setTimeout(() => {
+        let replyText = "I am currently in practice mode. To get dynamic answers from Tutor Anna, please add a Gemini API Key directly to the code in App.jsx!";
+        if (queryText.includes("zha") || queryText.includes("ழ")) {
+          replyText = "In Tamil, there are three 'L' sounds:\n\n1) ல (dental L, tongue touching front teeth, like 'light')\n2) ள (retroflex L, tongue folded back, like 'wall')\n3) ழ (unique retroflex approximant, tongue tip curled back near roof without touching it, like 'Zha' in 'Tamil' - தமிழ்).";
+        } else if (queryText.toLowerCase().includes("quiz")) {
+          replyText = "Sure! Here is Question 1: What is the very first vowel letter (உயிரெழுத்து) in Tamil?";
+        } else if (queryText.toLowerCase().includes("translate")) {
+          replyText = "Translate this phrase: 'Where is the railway station?' into Tamil. (Use the on-screen keyboard to respond!)";
+        } else if (queryText.toLowerCase().includes("greeting") || queryText.toLowerCase().includes("essential")) {
+          replyText = "Here are 5 essential greetings:\n\n1. வணக்கம் (Vanakkam) - Hello / Greetings\n2. நன்றி (Nandri) - Thank you\n3. நல்வரவு (Nalvaravu) - Welcome\n4. காலை வணக்கம் (Kaalai Vanakkam) - Good morning\n5. போய் வருகிறேன் (Poi varugiren) - Goodbye (literally: I will go and return)";
+        }
+        setTutorMessages(prev => [...prev, { role: 'assistant', text: replyText }]);
+        setTutorLoading(false);
+      }, 1000);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: `You are Tutor Anna, a highly helpful, student-friendly AI Tamil tutor. The user asks: "${queryText}". Answer in simple, concise English with Tamil examples where appropriate. Keep it clear, neat, and structured for school kids.` }] }]
+          })
+        }
+      );
+
+      if (!response.ok) throw new Error("Gemini API error");
+
+      const data = await response.json();
+      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that. Try again!";
+      setTutorMessages(prev => [...prev, { role: 'assistant', text: answer }]);
+    } catch (e) {
+      setTutorMessages(prev => [...prev, { role: 'assistant', text: "Error connecting to AI tutor. Make sure your Gemini API Key in App.jsx is valid." }]);
+    } finally {
+      setTutorLoading(false);
+    }
+  };
+
   // Load user from localStorage
   useEffect(() => {
     const savedUser = localStorage.getItem('tamilan_user');
@@ -893,7 +958,193 @@ export default function App() {
           border-color: var(--accent-primary);
           color: white;
         }
+
+        /* Floating AI Tutor Styling */
+        .ai-tutor-container {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        }
+        .floating-tutor-trigger {
+          border-radius: 20px !important;
+          padding: 10px 20px;
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+          font-weight: 500;
+        }
+        .tutor-chat-box {
+          width: 320px;
+          height: 420px;
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          border-radius: 4px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+          overflow: hidden;
+          margin-bottom: 8px;
+        }
+        .tutor-chat-header {
+          background: #f8fafc;
+          border-bottom: 1px solid #cbd5e1;
+          padding: 10px 14px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .tutor-close-btn {
+          background: transparent;
+          border: none;
+          font-size: 1.25rem;
+          cursor: pointer;
+          color: var(--text-muted);
+          line-height: 1;
+        }
+        .tutor-close-btn:hover {
+          color: var(--text-primary);
+        }
+        .tutor-chat-body {
+          flex-grow: 1;
+          padding: 14px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .tutor-msg-bubble {
+          padding: 8px 12px;
+          border-radius: 4px;
+          max-width: 90%;
+        }
+        .anna-bubble {
+          background: #f1f5f9;
+          border: 1px solid #cbd5e1;
+          align-self: flex-start;
+          text-align: left;
+        }
+        .student-bubble {
+          background: var(--accent-primary-glow);
+          border: 1px solid rgba(99, 102, 241, 0.2);
+          align-self: flex-end;
+          color: var(--text-primary);
+          text-align: left;
+        }
+        .tutor-predefined-container {
+          padding: 8px 14px;
+          border-top: 1px solid #f1f5f9;
+          background: #fafafa;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .tutor-prompt-chip {
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          border-radius: 2px;
+          padding: 4px 8px;
+          font-size: 0.7rem;
+          cursor: pointer;
+          font-weight: 500;
+          color: var(--text-muted);
+          transition: all 0.1s;
+        }
+        .tutor-prompt-chip:hover {
+          border-color: var(--accent-primary);
+          color: var(--accent-primary);
+          background: var(--accent-primary-glow);
+        }
+        .tutor-input-form {
+          border-top: 1px solid #cbd5e1;
+          padding: 10px;
+          background: #f8fafc;
+          display: flex;
+          gap: 8px;
+        }
+        .spinner-mini {
+          border: 2px solid #cbd5e1;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          border-left-color: var(--accent-primary);
+          animation: spin 0.8s linear infinite;
+        }
       `}</style>
+
+      {/* FLOATING AI TUTOR BOT */}
+      {user && (
+        <div className="ai-tutor-container">
+          {tutorOpen ? (
+            <div className="glass-panel tutor-chat-box animate-fade-in" style={{ display: 'flex', flexDirection: 'column' }}>
+              {/* Header */}
+              <div className="tutor-chat-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="dot-pulse" style={{ width: '6px', height: '6px' }}></span>
+                  <span style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--text-primary)' }}>Tutor Anna AI (தமிழன் அண்ணா)</span>
+                </div>
+                <button onClick={() => setTutorOpen(false)} className="tutor-close-btn">&times;</button>
+              </div>
+
+              {/* Messages body */}
+              <div className="tutor-chat-body">
+                {tutorMessages.map((msg, index) => (
+                  <div key={index} className={`tutor-msg-bubble ${msg.role === 'user' ? 'student-bubble' : 'anna-bubble'}`}>
+                    <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', marginBottom: '2px', fontWeight: 'bold' }}>
+                      {msg.role === 'user' ? 'YOU' : 'TUTOR ANNA'}
+                    </span>
+                    <p style={{ margin: 0, fontSize: '0.82rem', whiteSpace: 'pre-line', lineHeight: '1.4' }}>{msg.text}</p>
+                  </div>
+                ))}
+                {tutorLoading && (
+                  <div className="tutor-msg-bubble anna-bubble" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="spinner-mini"></div>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Thinking...</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Predefined prompts */}
+              <div className="tutor-predefined-container">
+                {predefinedPrompts.map((p, idx) => (
+                  <button 
+                    key={idx} 
+                    disabled={tutorLoading}
+                    onClick={() => handleTutorSubmit(p.query)}
+                    className="tutor-prompt-chip"
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Input form */}
+              <form onSubmit={(e) => { e.preventDefault(); handleTutorSubmit(tutorQuery); }} className="tutor-input-form">
+                <input
+                  type="text"
+                  value={tutorQuery}
+                  onChange={(e) => setTutorQuery(e.target.value)}
+                  placeholder="Ask a Tamil doubt..."
+                  className="form-input"
+                  style={{ flexGrow: 1, padding: '6px 10px', fontSize: '0.82rem' }}
+                  disabled={tutorLoading}
+                />
+                <button 
+                  type="submit" 
+                  className="btn-primary" 
+                  style={{ padding: '6px 12px', fontSize: '0.82rem' }}
+                  disabled={tutorLoading || !tutorQuery.trim()}
+                >
+                  Send
+                </button>
+              </form>
+            </div>
+          ) : (
+            <button onClick={() => setTutorOpen(true)} className="btn-primary floating-tutor-trigger">
+              <MessageSquare size={16} /> Chat with Tutor Anna AI
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
