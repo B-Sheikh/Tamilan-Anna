@@ -104,7 +104,8 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
       );
 
       if (!response.ok) {
-        throw new Error(`API returned status ${response.status}`);
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `API returned status ${response.status}`);
       }
 
       const data = await response.json();

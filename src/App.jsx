@@ -129,13 +129,16 @@ export default function App() {
         }
       );
 
-      if (!response.ok) throw new Error("Gemini API error");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that. Try again!";
       setTutorMessages(prev => [...prev, { role: 'assistant', text: answer }]);
     } catch (e) {
-      setTutorMessages(prev => [...prev, { role: 'assistant', text: "Error connecting to AI tutor. Make sure your Gemini API Key in App.jsx is valid." }]);
+      setTutorMessages(prev => [...prev, { role: 'assistant', text: `Error connecting to AI tutor: ${e.message}. (API Key loaded: ${apiKey ? apiKey.substring(0, 6) + '...' : 'empty/missing'})` }]);
     } finally {
       setTutorLoading(false);
     }
