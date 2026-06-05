@@ -60,7 +60,9 @@ export default function SpellingGrammar({ apiKey, onLogActivity }) {
     // Track score/activity for analytics
     const wordCount = text.trim().split(/\s+/).length;
 
-    if (!apiKey) {
+    const isValidKey = apiKey && apiKey.trim().startsWith('AIzaSy');
+
+    if (!isValidKey) {
       // Use mock response
       setTimeout(() => {
         const res = getMockCorrections(text);
@@ -220,9 +222,9 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', color: 'var(--text-muted)', textAlign: 'center' }}>
                 <SpellCheck size={48} style={{ opacity: 0.2, marginBottom: '12px' }} />
                 <p style={{ fontSize: '0.95rem' }}>Write Tamil text and click check to trigger AI diagnostics.</p>
-                {!apiKey && (
+                {!(apiKey && apiKey.trim().startsWith('AIzaSy')) && (
                   <p style={{ fontSize: '0.75rem', marginTop: '10px', color: 'var(--warning)' }}>
-                    * Running in simulated mode. Add a Gemini Key directly to App.jsx to test live arbitrary inputs.
+                    * Running in simulated mode. Add a valid Gemini Key starting with AIzaSy directly to App.jsx to test live arbitrary inputs.
                   </p>
                 )}
               </div>

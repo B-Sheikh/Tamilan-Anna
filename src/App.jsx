@@ -3,16 +3,17 @@ import Conversations from './components/Conversations';
 import SpellingGrammar from './components/SpellingGrammar';
 import VideoSection from './components/VideoSection';
 import TamilKeyboard from './components/TamilKeyboard';
-import { 
-  BookOpen, 
-  MessageSquare, 
-  Video, 
-  SpellCheck, 
-  BarChart3, 
-  Lock, 
-  Award, 
-  Flame, 
-  Target, 
+import TamilBasics from './components/TamilBasics';
+import {
+  BookOpen,
+  MessageSquare,
+  Video,
+  SpellCheck,
+  BarChart3,
+  Lock,
+  Award,
+  Flame,
+  Target,
   Send,
   LogOut,
   Sparkles,
@@ -31,12 +32,16 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false); // Toggle between Landing Page & Login Page
   const [activeTab, setActiveTab] = useState('dashboard');
-  
+
   // Interactive preview state for landing page
   const [previewText, setPreviewText] = useState('வணக்');
-  
-  // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
-  const apiKey = '';
+
+  // Helper to validate if the key starts with the standard Gemini prefix 'AIzaSy'
+  const isValidGeminiKey = (key) => typeof key === 'string' && key.trim().startsWith('AIzaSy');
+
+  // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below,
+  // or define VITE_GEMINI_API_KEY in a .env file.
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAolOx00GdQ-lqQKTigvWtoxaZ6E6h4Jlc';
 
   // Custom user level profile state
   const [loginForm, setLoginForm] = useState({
@@ -95,9 +100,9 @@ export default function App() {
     setTutorQuery('');
     setTutorLoading(true);
 
-    if (!apiKey) {
+    if (!isValidGeminiKey(apiKey)) {
       setTimeout(() => {
-        let replyText = "I am currently in practice mode. To get dynamic answers from Tutor Anna, please add a Gemini API Key directly to the code in App.jsx!";
+        let replyText = "I am currently in practice mode. To get dynamic answers from Tutor Anna, please add a valid Gemini API Key directly to the code in App.jsx (or in a .env file)!";
         if (queryText.includes("zha") || queryText.includes("ழ")) {
           replyText = "In Tamil, there are three 'L' sounds:\n\n1) ல (dental L, tongue touching front teeth, like 'light')\n2) ள (retroflex L, tongue folded back, like 'wall')\n3) ழ (unique retroflex approximant, tongue tip curled back near roof without touching it, like 'Zha' in 'Tamil' - தமிழ்).";
         } else if (queryText.toLowerCase().includes("quiz")) {
@@ -240,7 +245,7 @@ export default function App() {
   if (!user && !showLogin) {
     return (
       <div className="animate-fade-in" style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px', position: 'relative', overflow: 'hidden' }}>
-        
+
         {/* Soft Colorful Backdrop Glazes */}
         <div style={{ position: 'absolute', top: '5%', left: '5%', width: '400px', height: '400px', background: 'rgba(99, 102, 241, 0.07)', filter: 'blur(100px)', borderRadius: '50%', zIndex: -1 }}></div>
         <div style={{ position: 'absolute', bottom: '15%', right: '5%', width: '350px', height: '350px', background: 'rgba(13, 148, 136, 0.08)', filter: 'blur(90px)', borderRadius: '50%', zIndex: -1 }}></div>
@@ -282,12 +287,12 @@ export default function App() {
 
           {/* Right Column: Tactile Interactive Preview Card & Hero Image */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-            
+
             {/* Hand-crafted Flat illustration */}
             <div style={{ textAlign: 'center' }}>
-              <img 
-                src="/hero.png" 
-                alt="Student learning illustration" 
+              <img
+                src="/hero.png"
+                alt="Student learning illustration"
                 style={{ width: '100%', maxWidth: '340px', height: 'auto', borderRadius: '4px', border: '1px solid #cbd5e1' }}
               />
             </div>
@@ -300,8 +305,8 @@ export default function App() {
               </div>
 
               <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '4px', marginBottom: '14px', textAlign: 'center', border: '1px solid #cbd5e1' }}>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={previewText}
                   readOnly
                   style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', textAlign: 'center', width: '100%', border: 'none', background: 'transparent', outline: 'none' }}
@@ -312,8 +317,8 @@ export default function App() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
                   {['க', 'ம', 'த', 'ந'].map(char => (
-                    <button 
-                      key={char} 
+                    <button
+                      key={char}
                       onClick={() => setPreviewText(prev => prev + char)}
                       className="demo-key"
                     >
@@ -323,8 +328,8 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
                   {['ா', 'ி', 'ு', '்'].map(mod => (
-                    <button 
-                      key={mod} 
+                    <button
+                      key={mod}
                       onClick={() => setPreviewText(prev => prev + mod)}
                       className="demo-key modifier"
                     >
@@ -333,15 +338,15 @@ export default function App() {
                   ))}
                 </div>
                 <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginTop: '4px' }}>
-                  <button 
-                    onClick={() => setPreviewText('')} 
+                  <button
+                    onClick={() => setPreviewText('')}
                     className="demo-key clear-btn"
                     style={{ flexGrow: 1, fontSize: '0.75rem', padding: '6px 12px' }}
                   >
                     Clear
                   </button>
-                  <button 
-                    onClick={() => setPreviewText('வணக்கம்')} 
+                  <button
+                    onClick={() => setPreviewText('வணக்கம்')}
                     className="demo-key submit-demo-btn"
                     style={{ flexGrow: 2, fontSize: '0.75rem', padding: '6px 12px', color: 'white', background: 'var(--accent-primary)', border: 'none' }}
                   >
@@ -437,19 +442,19 @@ export default function App() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>YOUR NAME</label>
-              <input 
-                type="text" 
-                value={loginForm.name} 
+              <input
+                type="text"
+                value={loginForm.name}
                 onChange={(e) => setLoginForm({ ...loginForm, name: e.target.value })}
-                required 
-                className="form-input" 
-                placeholder="Enter your student name..." 
+                required
+                className="form-input"
+                placeholder="Enter your student name..."
               />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>YOUR TAMIL LEVEL</label>
-              <select 
+              <select
                 value={loginForm.level}
                 onChange={(e) => setLoginForm({ ...loginForm, level: e.target.value })}
                 className="form-input"
@@ -463,12 +468,12 @@ export default function App() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>STUDENT PIN (Optional)</label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 value={loginForm.pin}
                 onChange={(e) => setLoginForm({ ...loginForm, pin: e.target.value })}
-                className="form-input" 
-                placeholder="Pick any pin code..." 
+                className="form-input"
+                placeholder="Pick any pin code..."
               />
             </div>
 
@@ -530,6 +535,7 @@ export default function App() {
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {[
               { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+              { id: 'basics', label: 'Letters & Basics', icon: GraduationCap },
               { id: 'tutor', label: 'Chat with Tutor Anna', icon: MessageSquare },
               { id: 'conversation', label: 'Conversations & Voice', icon: Volume2 },
               { id: 'grammar', label: 'Spelling & Grammar', icon: SpellCheck },
@@ -553,8 +559,8 @@ export default function App() {
 
         {/* Footer controls inside sidebar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button 
-            onClick={handleLogout} 
+          <button
+            onClick={handleLogout}
             className="nav-btn-logout"
             style={{ width: '100%', justifyContent: 'flex-start' }}
           >
@@ -565,7 +571,7 @@ export default function App() {
 
       {/* CONTENT WORKSPACE */}
       <main style={{ padding: '32px', overflowY: 'auto', maxHeight: '100vh' }}>
-        
+
         {/* TOP STATUS BAR */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid var(--panel-border)', paddingBottom: '16px' }}>
           <div>
@@ -573,7 +579,7 @@ export default function App() {
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1) + ' workspace'}
             </h1>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Tamilan Anna Classroom v1.0 • Connected to {apiKey ? 'Gemini Live' : 'Simulated AI local engine'}
+              Tamilan Anna Classroom v1.0 • Connected to {isValidGeminiKey(apiKey) ? 'Gemini Live' : 'Simulated AI local engine'}
             </span>
           </div>
           {/* Quick Metrics */}
@@ -592,7 +598,7 @@ export default function App() {
         {/* MAIN TAB SWITCHER */}
         {activeTab === 'dashboard' && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            
+
             {/* Custom learning guide banner based on user level */}
             <div className="glass-panel guide-banner" style={{ padding: '24px', borderLeft: '4px solid var(--accent-primary)', background: 'white' }}>
               <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
@@ -622,7 +628,7 @@ export default function App() {
                 <Compass className="icon-cyan" size={20} />
                 <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-primary)' }}>Interactive Syllabus Pathways</h3>
               </div>
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
                 {/* Module 1 */}
                 <div className="syllabus-module-card">
@@ -755,7 +761,7 @@ export default function App() {
                   <form onSubmit={handleFeedbackSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>FEEDBACK CATEGORY</label>
-                      <select 
+                      <select
                         value={feedbackForm.category}
                         onChange={(e) => setFeedbackForm({ ...feedbackForm, category: e.target.value })}
                         className="form-input"
@@ -809,6 +815,10 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'basics' && (
+          <TamilBasics />
+        )}
+
         {activeTab === 'tutor' && (
           <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '24px', height: 'calc(100vh - 190px)' }}>
             {/* Left Column: Chat Container */}
@@ -822,7 +832,7 @@ export default function App() {
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Your Tamil Language Companion</span>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setTutorMessages([{ role: 'assistant', text: 'வணக்கம்! I am Tutor Anna (தமிழன் அண்ணா), your virtual Tamil companion. Ask me any doubts about spelling, grammar, or conversations!' }])}
                   className="module-action-btn"
                   style={{ padding: '6px 12px', fontSize: '0.75rem' }}
@@ -853,8 +863,8 @@ export default function App() {
               {/* Keyboard Option & Input Form */}
               <div style={{ borderTop: '1px solid var(--panel-border)', padding: '16px', background: '#f8fafc' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowTutorKeyboard(!showTutorKeyboard)}
                     className="module-action-btn"
                     style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', padding: '4px 8px' }}
@@ -881,9 +891,9 @@ export default function App() {
                     style={{ flexGrow: 1, padding: '10px 14px', fontSize: '0.9rem', borderRadius: '4px' }}
                     disabled={tutorLoading}
                   />
-                  <button 
-                    type="submit" 
-                    className="btn-primary" 
+                  <button
+                    type="submit"
+                    className="btn-primary"
                     style={{ padding: '10px 20px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '4px' }}
                     disabled={tutorLoading || !tutorQuery.trim()}
                   >
@@ -903,8 +913,8 @@ export default function App() {
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {predefinedPrompts.map((p, idx) => (
-                    <button 
-                      key={idx} 
+                    <button
+                      key={idx}
                       disabled={tutorLoading}
                       onClick={() => handleTutorSubmit(p.query)}
                       className="syllabus-module-card"
