@@ -91,34 +91,52 @@ Return your findings EXACTLY as a JSON object, containing:
 
 Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Output only the raw JSON.`;
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest'];
+    let lastError = null;
+    let success = false;
+
+    for (const model of modelsToTry) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json" }
+            })
+          }
+        );
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error?.message || `API returned status ${response.status}`);
         }
-      );
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || `API returned status ${response.status}`);
+        const data = await response.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const parsed = JSON.parse(rawText.trim());
+
+        setResults(parsed);
+        const errorCount = parsed.errors?.length || 0;
+        onLogActivity('grammar_check', {
+          words: wordCount,
+          errorsFound: errorCount,
+          score: Math.max(0, 100 - errorCount * 15)
+        });
+        success = true;
+        setLoading(false);
+        break; // exit loop on success
+      } catch (err) {
+        console.warn(`Failed spelling check with model ${model}:`, err.message);
+        lastError = err;
       }
+    }
 
-      const data = await response.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      const parsed = JSON.parse(rawText.trim());
-
-      setResults(parsed);
-      const errorCount = parsed.errors?.length || 0;
-      onLogActivity('grammar_check', {
-        words: wordCount,
-        errorsFound: errorCount,
-        score: Math.max(0, 100 - errorCount * 15)
-      });
+    if (!success) {
+      throw lastError || new Error("All fallback models failed");
+    }
     } catch (err) {
       console.error(err);
       setError("Failed to run Gemini check. Using local fallback. " + err.message);

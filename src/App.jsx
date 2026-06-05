@@ -117,31 +117,43 @@ export default function App() {
       return;
     }
 
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: `You are Tutor Anna, a highly helpful, student-friendly AI Tamil tutor. The user asks: "${queryText}". Answer in simple, concise English with Tamil examples where appropriate. Keep it clear, neat, and structured for school kids.` }] }]
-          })
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest'];
+    let lastError = null;
+    let success = false;
+
+    for (const model of modelsToTry) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `You are Tutor Anna, a highly helpful, student-friendly AI Tamil tutor. The user asks: "${queryText}". Answer in simple, concise English with Tamil examples where appropriate. Keep it clear, neat, and structured for school kids.` }] }]
+            })
+          }
+        );
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error?.message || `HTTP error! status: ${response.status}`);
         }
-      );
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || `HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that. Try again!";
+        setTutorMessages(prev => [...prev, { role: 'assistant', text: answer }]);
+        success = true;
+        break; // exit loop on success
+      } catch (err) {
+        console.warn(`Failed with model ${model}:`, err.message);
+        lastError = err;
       }
-
-      const data = await response.json();
-      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that. Try again!";
-      setTutorMessages(prev => [...prev, { role: 'assistant', text: answer }]);
-    } catch (e) {
-      setTutorMessages(prev => [...prev, { role: 'assistant', text: `Error connecting to AI tutor: ${e.message}. (API Key loaded: ${apiKey ? apiKey.substring(0, 6) + '...' : 'empty/missing'})` }]);
-    } finally {
-      setTutorLoading(false);
     }
+
+    if (!success) {
+      setTutorMessages(prev => [...prev, { role: 'assistant', text: `Error connecting to AI tutor: ${lastError?.message || 'Unknown error'}. (API Key loaded: ${apiKey ? apiKey.substring(0, 6) + '...' : 'empty/missing'})` }]);
+    }
+    setTutorLoading(false);
   };
 
   // Load user from localStorage
