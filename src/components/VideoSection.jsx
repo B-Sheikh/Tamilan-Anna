@@ -6,17 +6,17 @@ export default function VideoSection() {
 
   const videos = [
     {
-      id: 'ujc6jifKxk0',
-      title: 'Tamil Virtual Academy - Introduction Lesson',
-      category: 'grammar',
-      description: 'Understanding the overview of structured Tamil courses from the Academy.',
+      id: 'FhO90yXyJ0Y',
+      title: 'Learn To Write Tamil Alphabets - Pebbles',
+      category: 'alphabets',
+      description: 'Step by step writing tutorial of base Tamil letters for school kids.',
       duration: '11:20'
     },
     {
-      id: 'gC9c7v1sYqQ',
-      title: 'Learn Tamil Lesson 1 (உயிரெழுத்துக்கள்) - Vowels',
+      id: 'kYv9m_L95Cg',
+      title: 'Learn Colors in Tamil | Nirangal - Pebbles',
       category: 'alphabets',
-      description: 'Explore the basics of Tamil writing starting with fundamental vowel systems.',
+      description: 'Learn color names in Tamil with beautiful visual representations.',
       duration: '14:15'
     },
     {
@@ -27,39 +27,39 @@ export default function VideoSection() {
       duration: '18:40'
     },
     {
-      id: 'l_a6a0qB72s',
-      title: 'Common Conversational Tamil Sentences & Dialogs',
+      id: 'kYJjZ_Nq4w8',
+      title: 'Spoken Tamil through English - Pebbles',
       category: 'conversations',
-      description: 'Daily spoken sentences for beginners, from greeting people to asking directions.',
+      description: 'Start learning how to speak everyday Tamil sentences with English translations.',
       duration: '12:50'
     },
     {
-      id: 'H0O7sE6jXfU',
-      title: 'Learn Tamil Conversation for Beginners',
+      id: '1qIP9l09pcc',
+      title: 'Melons Fruits Rhyme in Tamil - Pebbles',
       category: 'conversations',
-      description: 'Essential everyday conversational expressions, greetings, and sentence structures.',
-      duration: '45:10'
+      description: 'A fun children\'s song teaching fruit names and descriptions in Tamil.',
+      duration: '03:40'
     },
     {
-      id: 'R8jB9F4oTNY',
-      title: 'Tamil Consonants (மெய்யெழுத்துக்கள்)',
+      id: 'yP8_nLp5XEs',
+      title: 'Tamil Rhymes & Vowels Lesson - Infobells',
       category: 'alphabets',
-      description: 'Complete breakdown of writing and reciting Tamil consonant letters (Mei Ezhuthukkal).',
+      description: 'An extremely popular kids tutorial teaching Tamil vowels and pronunciation.',
       duration: '10:25'
     },
     {
-      id: 'aF07rCekF_0',
-      title: 'Grammar: Double Consonants Rules in Tamil',
+      id: 'tL5fd05GpQs',
+      title: 'Krishna and Fruit Seller Story in Tamil - Pebbles',
       category: 'grammar',
-      description: 'Learn where hard consonants double (வலிமிகும் இடங்கள்) to improve grammar accuracy.',
-      duration: '12:30'
+      description: 'Learn contextual sentence structures and storytelling grammar in Tamil.',
+      duration: '06:30'
     },
     {
-      id: '29JtN_G9c04',
-      title: 'Tamil Vocabulary - 100 Common Words',
+      id: 'zR1z45p873s',
+      title: 'Learn Numbers 1 - 10 in Tamil - Pebbles',
       category: 'conversations',
-      description: 'Expand your word bank with 100 high-frequency Tamil words and meanings.',
-      duration: '15:40'
+      description: 'Learn numbers counting and vocabulary in Tamil with animation.',
+      duration: '08:40'
     }
   ];
 
