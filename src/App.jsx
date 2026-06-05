@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Conversations from './components/Conversations';
 import SpellingGrammar from './components/SpellingGrammar';
 import VideoSection from './components/VideoSection';
+import TamilKeyboard from './components/TamilKeyboard';
 import { 
   BookOpen, 
   MessageSquare, 
@@ -20,8 +21,11 @@ import {
   GraduationCap,
   PlayCircle,
   Compass,
-  CheckCircle
+  CheckCircle,
+  Volume2,
+  Keyboard
 } from 'lucide-react';
+
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -65,6 +69,16 @@ export default function App() {
     { role: 'assistant', text: 'வணக்கம்! I am Tutor Anna (தமிழன் அண்ணா), your virtual Tamil companion. Ask me any doubts about spelling, grammar, or conversations!' }
   ]);
   const [tutorLoading, setTutorLoading] = useState(false);
+  const [showTutorKeyboard, setShowTutorKeyboard] = useState(false);
+  const tutorChatEndRef = React.useRef(null);
+  const tutorInputRef = React.useRef(null);
+
+  useEffect(() => {
+    if (tutorChatEndRef.current) {
+      tutorChatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [tutorMessages, tutorLoading]);
+
 
   const predefinedPrompts = [
     { label: "Quiz me on Vowels", query: "Give me a quick 3-question quiz on Tamil vowel letters. Ask one question at a time and wait for my response." },
@@ -516,7 +530,8 @@ export default function App() {
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {[
               { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-              { id: 'conversation', label: 'Conversations & Voice', icon: MessageSquare },
+              { id: 'tutor', label: 'Chat with Tutor Anna', icon: MessageSquare },
+              { id: 'conversation', label: 'Conversations & Voice', icon: Volume2 },
               { id: 'grammar', label: 'Spelling & Grammar', icon: SpellCheck },
               { id: 'videos', label: 'TVA Video Academy', icon: Video }
             ].map(item => {
@@ -789,6 +804,133 @@ export default function App() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'tutor' && (
+          <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '24px', height: 'calc(100vh - 190px)' }}>
+            {/* Left Column: Chat Container */}
+            <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', background: 'white', height: '100%', overflow: 'hidden', padding: '0', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--panel-border)', background: '#f8fafc' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ width: '8px', height: '8px', background: 'var(--success)', borderRadius: '50%', display: 'inline-block' }}></span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>Tutor Anna (தமிழன் அண்ணா)</h3>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Your Tamil Language Companion</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setTutorMessages([{ role: 'assistant', text: 'வணக்கம்! I am Tutor Anna (தமிழன் அண்ணா), your virtual Tamil companion. Ask me any doubts about spelling, grammar, or conversations!' }])}
+                  className="module-action-btn"
+                  style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                >
+                  Clear History
+                </button>
+              </div>
+
+              {/* Message Area */}
+              <div style={{ flexGrow: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', background: '#fcfcfd' }}>
+                {tutorMessages.map((msg, index) => (
+                  <div key={index} className={`tutor-msg-bubble ${msg.role === 'user' ? 'student-bubble' : 'anna-bubble'}`} style={{ maxWidth: '85%', padding: '12px 16px', borderRadius: '4px', alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', background: msg.role === 'user' ? 'var(--accent-primary-glow)' : '#ffffff', border: msg.role === 'user' ? '1px solid rgba(99, 102, 241, 0.2)' : '1px solid #cbd5e1' }}>
+                    <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 'bold', letterSpacing: '0.5px' }}>
+                      {msg.role === 'user' ? 'YOU' : 'TUTOR ANNA'}
+                    </span>
+                    <p style={{ margin: 0, fontSize: '0.9rem', whiteSpace: 'pre-line', lineHeight: '1.5', color: 'var(--text-primary)' }}>{msg.text}</p>
+                  </div>
+                ))}
+                {tutorLoading && (
+                  <div className="tutor-msg-bubble anna-bubble" style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', border: '1px solid #cbd5e1', padding: '12px 16px', borderRadius: '4px' }}>
+                    <div className="spinner-mini"></div>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Tutor Anna is thinking...</span>
+                  </div>
+                )}
+                <div ref={tutorChatEndRef} />
+              </div>
+
+              {/* Keyboard Option & Input Form */}
+              <div style={{ borderTop: '1px solid var(--panel-border)', padding: '16px', background: '#f8fafc' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowTutorKeyboard(!showTutorKeyboard)}
+                    className="module-action-btn"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', padding: '4px 8px' }}
+                  >
+                    <Keyboard size={14} /> {showTutorKeyboard ? 'Hide' : 'Show'} Tamil Keyboard
+                  </button>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Type in English or Tamil</span>
+                </div>
+
+                {showTutorKeyboard && (
+                  <div style={{ marginBottom: '12px', border: '1px solid #cbd5e1', padding: '8px', background: '#ffffff', borderRadius: '4px' }}>
+                    <TamilKeyboard onKeyPress={(val) => setTutorQuery(val)} targetInputRef={tutorInputRef} />
+                  </div>
+                )}
+
+                <form onSubmit={(e) => { e.preventDefault(); handleTutorSubmit(tutorQuery); }} style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    ref={tutorInputRef}
+                    type="text"
+                    value={tutorQuery}
+                    onChange={(e) => setTutorQuery(e.target.value)}
+                    placeholder="Ask a Tamil doubt, e.g. How to say hello? or write in Tamil..."
+                    className="form-input"
+                    style={{ flexGrow: 1, padding: '10px 14px', fontSize: '0.9rem', borderRadius: '4px' }}
+                    disabled={tutorLoading}
+                  />
+                  <button 
+                    type="submit" 
+                    className="btn-primary" 
+                    style={{ padding: '10px 20px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '4px' }}
+                    disabled={tutorLoading || !tutorQuery.trim()}
+                  >
+                    Send <Send size={16} />
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Right Column: Predefined Prompts & Help */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' }}>
+              {/* Quick Prompts Panel */}
+              <div className="glass-panel" style={{ padding: '20px', background: 'white', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Quick Study Prompts</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Click on any of the study prompts below to instantly start an interactive lesson or quiz with Tutor Anna:
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {predefinedPrompts.map((p, idx) => (
+                    <button 
+                      key={idx} 
+                      disabled={tutorLoading}
+                      onClick={() => handleTutorSubmit(p.query)}
+                      className="syllabus-module-card"
+                      style={{ textDecoration: 'none', textAlign: 'left', cursor: 'pointer', padding: '12px', border: '1px solid #cbd5e1', transition: 'all 0.15s', background: '#ffffff', borderRadius: '4px' }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{p.label}</span>
+                        <Sparkles size={14} style={{ color: 'var(--accent-primary)' }} />
+                      </div>
+                      <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {p.query}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Tips Panel */}
+              <div className="glass-panel" style={{ padding: '20px', background: 'white', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>💡 Learning Tips</h3>
+                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '8px', lineHeight: '1.4' }}>
+                  <li>Use the <strong>Tamil Keyboard</strong> to practice spelling letters directly with modifiers.</li>
+                  <li>Ask Tutor Anna to translate any phrase by typing "Translate: [your sentence]".</li>
+                  <li>If you are looking for video materials, head over to the <strong>TVA Video Academy</strong> tab!</li>
+                  <li>Practice makes perfect—try to keep a streak going on your Dashboard.</li>
+                </ul>
               </div>
             </div>
           </div>
@@ -1071,80 +1213,7 @@ export default function App() {
         }
       `}</style>
 
-      {/* FLOATING AI TUTOR BOT */}
-      {user && (
-        <div className="ai-tutor-container">
-          {tutorOpen ? (
-            <div className="glass-panel tutor-chat-box animate-fade-in" style={{ display: 'flex', flexDirection: 'column' }}>
-              {/* Header */}
-              <div className="tutor-chat-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span className="dot-pulse" style={{ width: '6px', height: '6px' }}></span>
-                  <span style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--text-primary)' }}>Tutor Anna AI (தமிழன் அண்ணா)</span>
-                </div>
-                <button onClick={() => setTutorOpen(false)} className="tutor-close-btn">&times;</button>
-              </div>
 
-              {/* Messages body */}
-              <div className="tutor-chat-body">
-                {tutorMessages.map((msg, index) => (
-                  <div key={index} className={`tutor-msg-bubble ${msg.role === 'user' ? 'student-bubble' : 'anna-bubble'}`}>
-                    <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', marginBottom: '2px', fontWeight: 'bold' }}>
-                      {msg.role === 'user' ? 'YOU' : 'TUTOR ANNA'}
-                    </span>
-                    <p style={{ margin: 0, fontSize: '0.82rem', whiteSpace: 'pre-line', lineHeight: '1.4' }}>{msg.text}</p>
-                  </div>
-                ))}
-                {tutorLoading && (
-                  <div className="tutor-msg-bubble anna-bubble" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div className="spinner-mini"></div>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Thinking...</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Predefined prompts */}
-              <div className="tutor-predefined-container">
-                {predefinedPrompts.map((p, idx) => (
-                  <button 
-                    key={idx} 
-                    disabled={tutorLoading}
-                    onClick={() => handleTutorSubmit(p.query)}
-                    className="tutor-prompt-chip"
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Input form */}
-              <form onSubmit={(e) => { e.preventDefault(); handleTutorSubmit(tutorQuery); }} className="tutor-input-form">
-                <input
-                  type="text"
-                  value={tutorQuery}
-                  onChange={(e) => setTutorQuery(e.target.value)}
-                  placeholder="Ask a Tamil doubt..."
-                  className="form-input"
-                  style={{ flexGrow: 1, padding: '6px 10px', fontSize: '0.82rem' }}
-                  disabled={tutorLoading}
-                />
-                <button 
-                  type="submit" 
-                  className="btn-primary" 
-                  style={{ padding: '6px 12px', fontSize: '0.82rem' }}
-                  disabled={tutorLoading || !tutorQuery.trim()}
-                >
-                  Send
-                </button>
-              </form>
-            </div>
-          ) : (
-            <button onClick={() => setTutorOpen(true)} className="btn-primary floating-tutor-trigger">
-              <MessageSquare size={16} /> Chat with Tutor Anna AI
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
