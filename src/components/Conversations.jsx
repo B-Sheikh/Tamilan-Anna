@@ -50,7 +50,7 @@ export default function Conversations({ apiKey, onLogActivity }) {
     {
       title: 'At a Restaurant (உணவகம்)',
       difficulty: 'Intermediate',
-      description: 'Order delicious south indian food in Tamil.',
+      description: 'Order delicious south Indian food in Tamil.',
       dialogs: [
         {
           ai: {
@@ -76,6 +76,39 @@ export default function Conversations({ apiKey, onLogActivity }) {
             translit: 'Konjam kaaram kuraivaaga irukkattum.',
             english: 'Let it be a bit less spicy.',
             matchKeywords: ['கொஞ்சம்', 'காரம்', 'குறைவாக', 'இருக்கட்டும்']
+          }
+        }
+      ]
+    },
+    {
+      title: 'Catching an Auto (ஆட்டோ பிடித்தல்)',
+      difficulty: 'Intermediate',
+      description: 'Negotiate destination and fare with an auto driver.',
+      dialogs: [
+        {
+          ai: {
+            tamil: 'எங்கே போக வேண்டும், தம்பி?',
+            translit: 'Engae poga vendum, thambi?',
+            english: 'Where do you want to go, brother?'
+          },
+          user: {
+            tamil: 'மெரினா கடற்கரைக்கு வர முடியுமா? எவ்வளவு ஆகும்?',
+            translit: 'Marina kadarkarai-kku vara mudiyuma? Evvalavu aagum?',
+            english: 'Can you come to Marina Beach? How much will it be?',
+            matchKeywords: ['மெரினா', 'கடற்கரைக்கு', 'வர', 'முடியுமா', 'எவ்வளவு']
+          }
+        },
+        {
+          ai: {
+            tamil: 'நூறு ரூபாய் ஆகும், ஏறுங்கள்.',
+            translit: 'Nooru roobai aagum, eerungal.',
+            english: 'It will be one hundred rupees, get in.'
+          },
+          user: {
+            tamil: 'சரி, போவோம். சீக்கிரம் செல்லுங்கள்.',
+            translit: 'Sari, povom. Seekkiram sellungal.',
+            english: 'Okay, let\'s go. Please go quickly.',
+            matchKeywords: ['சரி', 'போவோம்', 'சீக்கிரம்', 'செல்லுங்கள்']
           }
         }
       ]
@@ -109,6 +142,138 @@ export default function Conversations({ apiKey, onLogActivity }) {
             translit: 'Migavum nandri, aiya!',
             english: 'Thank you very much, sir!',
             matchKeywords: ['மிகவும்', 'நன்றி', 'ஐயா']
+          }
+        }
+      ]
+    },
+    {
+      title: 'Buying Vegetables (காயறி வாங்குதல்)',
+      difficulty: 'Beginner',
+      description: 'Ask for prices and buy fresh tomatoes at the local market.',
+      dialogs: [
+        {
+          ai: {
+            tamil: 'தக்காளி ஒரு கிலோ நாற்பது ரூபாய். எத்தனை கிலோ வேண்டும்?',
+            translit: 'Thakkaali oru kilo naarpathu roobai. Ethanai kilo vendum?',
+            english: 'Tomatoes are forty rupees a kilo. How many kilos do you want?'
+          },
+          user: {
+            tamil: 'எனக்கு அரை கிலோ தக்காளி மட்டும் கொடுங்கள்.',
+            translit: 'Enakku arai kilo thakkaali mattum kodungal.',
+            english: 'Give me just half a kilo of tomatoes.',
+            matchKeywords: ['எனக்கு', 'அரை', 'கிலோ', 'தக்காளி', 'கொடுங்கள்']
+          }
+        },
+        {
+          ai: {
+            tamil: 'இதோ தக்காளி. வேறு ஏதாவது காய்கறி வேண்டுமா?',
+            translit: 'Idho thakkaali. Vaeru eadhaavadhu kaaygari venduma?',
+            english: 'Here are the tomatoes. Do you want any other vegetables?'
+          },
+          user: {
+            tamil: 'இல்லை, இது போதும். மொத்தம் எவ்வளவு?',
+            translit: 'Illai, idhu podhum. Moththam evvalavu?',
+            english: 'No, this is enough. How much is the total?',
+            matchKeywords: ['இல்லை', 'போதும்', 'மொத்தம்', 'எவ்வளவு']
+          }
+        }
+      ]
+    },
+    {
+      title: 'Buying a Bus Ticket (பேருந்து சீட்டு வாங்குதல்)',
+      difficulty: 'Beginner',
+      description: 'Ask the bus conductor for a ticket to your destination.',
+      dialogs: [
+        {
+          ai: {
+            tamil: 'எங்கே செல்ல வேண்டும்? சில்லறை கொடுங்கள்.',
+            translit: 'Engae sella vendum? Sillarai kodungal.',
+            english: 'Where do you need to go? Please give change.'
+          },
+          user: {
+            tamil: 'தி நகர் செல்ல ஒரு சீட்டு கொடுங்கள்.',
+            translit: 'T Nagar sella oru seettu kodungal.',
+            english: 'Please give me one ticket to T Nagar.',
+            matchKeywords: ['தி', 'நகர்', 'செல்ல', 'சீட்டு', 'கொடுங்கள்']
+          }
+        },
+        {
+          ai: {
+            tamil: 'சீட்டு இந்தாங்க, இருபது ரூபாய் கொடுங்கள்.',
+            translit: 'Seettu indhaanga, irubathu roobai kodungal.',
+            english: 'Here is the ticket, give me twenty rupees.'
+          },
+          user: {
+            tamil: 'இந்தாருங்கள் பணம், நன்றி.',
+            translit: 'Indhaarungal panam, nandri.',
+            english: 'Here is the money, thank you.',
+            matchKeywords: ['இந்தாருங்கள்', 'பணம்', 'நன்றி']
+          }
+        }
+      ]
+    },
+    {
+      title: 'Emergency Help (உதவி கேட்டல்)',
+      difficulty: 'Beginner',
+      description: 'Ask locals for emergency assistance or phone call help.',
+      dialogs: [
+        {
+          ai: {
+            tamil: 'என்ன ஆச்சு? ஏதாவது பிரச்சனையா?',
+            translit: 'Enna aachu? Eadhaavadhu pirachanaaiya?',
+            english: 'What happened? Is there any problem?'
+          },
+          user: {
+            tamil: 'என் போன் வேலை செய்யவில்லை, கொஞ்சம் உதவுங்கள்.',
+            translit: 'En phone vaelai seyyavillai, konjam udhavungal.',
+            english: 'My phone is not working, please help me a bit.',
+            matchKeywords: ['என்', 'போன்', 'வேலை', 'செய்யவில்லை', 'உதவுங்கள்']
+          }
+        },
+        {
+          ai: {
+            tamil: 'பரவாயில்லை, எனது போனில் இருந்து யாருக்கு அழைக்க வேண்டும்?',
+            translit: 'Paravaayillai, enadhu phone-il irundhu yaarukku azhaikka vendum?',
+            english: 'No problem, who do you want to call from my phone?'
+          },
+          user: {
+            tamil: 'என் அப்பாவிற்கு போன் செய்ய வேண்டும்.',
+            translit: 'En appaavirku phone seyya vendum.',
+            english: 'I need to call my father.',
+            matchKeywords: ['என்', 'அப்பாவிற்கு', 'போன்', 'செய்ய', 'வேண்டும்']
+          }
+        }
+      ]
+    },
+    {
+      title: 'At the Grocery Store (மளிகைக் கடை)',
+      difficulty: 'Intermediate',
+      description: 'Interact with the local shopkeeper to buy daily goods.',
+      dialogs: [
+        {
+          ai: {
+            tamil: 'வணக்கம்! இன்று கடைக்கு என்ன வேண்டும்?',
+            translit: 'Vanakkam! Indru kadaikku enna vendum?',
+            english: 'Hello! What do you need from the shop today?'
+          },
+          user: {
+            tamil: 'ஒரு பாக்கெட் பாலும் ஒரு கிலோ சர்க்கரையும் கொடுங்கள்.',
+            translit: 'Oru packet paalum oru kilo sarkkaraiyum kodungal.',
+            english: 'Please give me one packet of milk and one kilo of sugar.',
+            matchKeywords: ['பாக்கெட்', 'பாலும்', 'கிலோ', 'சர்க்கரையும்', 'கொடுங்கள்']
+          }
+        },
+        {
+          ai: {
+            tamil: 'சர்க்கரை இருக்கிறது, பால் பாக்கெட் தீர்ந்துவிட்டது.',
+            translit: 'Sarkkarai irukkiradhu, paal packet theerndhuvittadhu.',
+            english: 'Sugar is available, but the milk packets are sold out.'
+          },
+          user: {
+            tamil: 'பரவாயில்லை, சர்க்கரையை மட்டும் கொடுங்கள், ஆன்லைனில் பணம் கட்டலாமா?',
+            translit: 'Paravaayillai, sarkkaraiyai mattum kodungal, online-il panam kattalaama?',
+            english: 'No problem, give me just the sugar, can I pay online?',
+            matchKeywords: ['சர்க்கரையை', 'கொடுங்கள்', 'ஆன்லைனில்', 'பணம்', 'கட்டலாமா']
           }
         }
       ]
