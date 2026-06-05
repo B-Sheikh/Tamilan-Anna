@@ -36,8 +36,8 @@ export default function App() {
   // Interactive preview state for landing page
   const [previewText, setPreviewText] = useState('வணக்');
 
-  // Helper to validate if the key starts with the standard Gemini prefix 'AIzaSy'
-  const isValidGeminiKey = (key) => typeof key === 'string' && key.trim().startsWith('AIzaSy');
+  // Helper to validate if the key starts with the standard Gemini prefix 'AIzaSy' or GCP prefix 'AQ.'
+  const isValidGeminiKey = (key) => typeof key === 'string' && (key.trim().startsWith('AIzaSy') || key.trim().startsWith('AQ.'));
 
   // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
