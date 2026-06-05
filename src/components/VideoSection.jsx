@@ -32,6 +32,34 @@ export default function VideoSection() {
       category: 'conversations',
       description: 'Daily spoken sentences for beginners, from greeting people to asking directions.',
       duration: '12:50'
+    },
+    {
+      id: 'H0O7sE6jXfU',
+      title: 'Learn Tamil Conversation for Beginners',
+      category: 'conversations',
+      description: 'Essential everyday conversational expressions, greetings, and sentence structures.',
+      duration: '45:10'
+    },
+    {
+      id: 'R8jB9F4oTNY',
+      title: 'Tamil Consonants (மெய்யெழுத்துக்கள்)',
+      category: 'alphabets',
+      description: 'Complete breakdown of writing and reciting Tamil consonant letters (Mei Ezhuthukkal).',
+      duration: '10:25'
+    },
+    {
+      id: 'aF07rCekF_0',
+      title: 'Grammar: Double Consonants Rules in Tamil',
+      category: 'grammar',
+      description: 'Learn where hard consonants double (வலிமிகும் இடங்கள்) to improve grammar accuracy.',
+      duration: '12:30'
+    },
+    {
+      id: '29JtN_G9c04',
+      title: 'Tamil Vocabulary - 100 Common Words',
+      category: 'conversations',
+      description: 'Expand your word bank with 100 high-frequency Tamil words and meanings.',
+      duration: '15:40'
     }
   ];
 
