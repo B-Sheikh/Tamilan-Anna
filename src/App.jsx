@@ -40,7 +40,7 @@ export default function App() {
   const isValidGeminiKey = (key) => typeof key === 'string' && key.trim().startsWith('AIzaSy');
 
   // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
-  const apiKey = 'AIzaSyAolOx00GdQ-lqQKTigvWtoxaZ6E6h4Jlc';
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 
   // Custom user level profile state
   const [loginForm, setLoginForm] = useState({
