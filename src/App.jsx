@@ -39,9 +39,8 @@ export default function App() {
   // Helper to validate if the key starts with the standard Gemini prefix 'AIzaSy'
   const isValidGeminiKey = (key) => typeof key === 'string' && key.trim().startsWith('AIzaSy');
 
-  // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below,
-  // or define VITE_GEMINI_API_KEY in a .env file.
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAolOx00GdQ-lqQKTigvWtoxaZ6E6h4Jlc';
+  // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
+  const apiKey = 'AIzaSyAolOx00GdQ-lqQKTigvWtoxaZ6E6h4Jlc';
 
   // Custom user level profile state
   const [loginForm, setLoginForm] = useState({
@@ -120,7 +119,7 @@ export default function App() {
 
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
