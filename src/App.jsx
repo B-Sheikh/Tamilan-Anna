@@ -4,6 +4,7 @@ import SpellingGrammar from './components/SpellingGrammar';
 import VideoSection from './components/VideoSection';
 import TamilKeyboard from './components/TamilKeyboard';
 import TamilBasics from './components/TamilBasics';
+import VoiceConversation from './components/VoiceConversation';
 import {
   BookOpen,
   MessageSquare,
@@ -24,7 +25,8 @@ import {
   Compass,
   CheckCircle,
   Volume2,
-  Keyboard
+  Keyboard,
+  Mic
 } from 'lucide-react';
 
 
@@ -551,6 +553,7 @@ export default function App() {
               { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
               { id: 'basics', label: 'Letters & Basics', icon: GraduationCap },
               { id: 'tutor', label: 'Chat with Tutor Anna', icon: MessageSquare },
+              { id: 'voice_chat', label: 'Continuous Voice Chat', icon: Mic },
               { id: 'conversation', label: 'Conversations & Voice', icon: Volume2 },
               { id: 'grammar', label: 'Spelling & Grammar', icon: SpellCheck },
               { id: 'videos', label: 'TVA Video Academy', icon: Video }
@@ -970,6 +973,10 @@ export default function App() {
 
         {activeTab === 'videos' && (
           <VideoSection />
+        )}
+
+        {activeTab === 'voice_chat' && (
+          <VoiceConversation apiKey={apiKey} />
         )}
       </main>
 
