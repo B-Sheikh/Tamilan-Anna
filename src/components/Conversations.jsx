@@ -9,6 +9,8 @@ export default function Conversations({ apiKey, onLogActivity }) {
   const [speechResult, setSpeechResult] = useState('');
   const [pronunciationScore, setPronunciationScore] = useState(null);
   const [recognitionSupported, setRecognitionSupported] = useState(false);
+  const [voices, setVoices] = useState([]);
+  const [selectedVoiceName, setSelectedVoiceName] = useState('default-female');
   
   let recognition = null;
 
@@ -289,6 +291,23 @@ export default function Conversations({ apiKey, onLogActivity }) {
     if (SpeechRecognition) {
       setRecognitionSupported(true);
     }
+
+    const loadVoices = () => {
+      if ('speechSynthesis' in window) {
+        const availableVoices = window.speechSynthesis.getVoices();
+        const taVoices = availableVoices.filter(v => v.lang.toLowerCase().includes('ta'));
+        setVoices(taVoices);
+      }
+    };
+    loadVoices();
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    }
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+      }
+    };
   }, []);
 
   // Text-To-Speech (TTS) using native SpeechSynthesis
@@ -298,16 +317,31 @@ export default function Conversations({ apiKey, onLogActivity }) {
       window.speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(text);
+      const systemVoices = window.speechSynthesis.getVoices();
       
-      // Attempt to find a Tamil voice
-      const voices = window.speechSynthesis.getVoices();
-      const taVoice = voices.find(voice => voice.lang.includes('ta') || voice.lang.includes('TA'));
-      
-      if (taVoice) {
-        utterance.voice = taVoice;
+      if (selectedVoiceName === 'default-male') {
+        const maleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
+          (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hemant') || v.name.toLowerCase().includes('valluvar')));
+        if (maleVoice) {
+          utterance.voice = maleVoice;
+        }
+        utterance.pitch = 0.8; // Lower pitch for simulated male voice
+      } else if (selectedVoiceName === 'default-female') {
+        const femaleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
+          (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('kalpana') || v.name.toLowerCase().includes('sabina') || v.name.toLowerCase().includes('google')));
+        if (femaleVoice) {
+          utterance.voice = femaleVoice;
+        }
+        utterance.pitch = 1.15; // Slightly higher pitch for simulated female voice
+      } else {
+        const chosenVoice = systemVoices.find(v => v.name === selectedVoiceName);
+        if (chosenVoice) {
+          utterance.voice = chosenVoice;
+        }
       }
+
       utterance.lang = 'ta-IN';
-      utterance.rate = 0.85; // slightly slower for learners
+      utterance.rate = 0.8; // Slower rate for clear learner speech delivery
       window.speechSynthesis.speak(utterance);
     } else {
       alert("Speech synthesis is not supported on this browser.");
@@ -453,8 +487,25 @@ export default function Conversations({ apiKey, onLogActivity }) {
           ))}
         </div>
 
-        {/* Practice Room */}
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', minHeight: '400px' }}>
+          {/* Voice Preferences Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--panel-border)', paddingBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Scenario Practice Room</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>SPEECH VOICE:</span>
+              <select
+                value={selectedVoiceName}
+                onChange={(e) => setSelectedVoiceName(e.target.value)}
+                style={{ padding: '4px 8px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: 'pointer' }}
+              >
+                <option value="default-female">👩 Default Female Voice</option>
+                <option value="default-male">👨 Default Male Voice (Pitch 0.8x)</option>
+                {voices.map((v, i) => (
+                  <option key={i} value={v.name}>{v.name} ({v.lang})</option>
+                ))}
+              </select>
+            </div>
+          </div>
           {/* AI Turn bubble */}
           <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
             <div className="ai-avatar">AI</div>

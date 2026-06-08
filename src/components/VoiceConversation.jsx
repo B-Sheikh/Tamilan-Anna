@@ -12,6 +12,8 @@ export default function VoiceConversation({ apiKey }) {
   const [recognitionSupported, setRecognitionSupported] = useState(false);
   const [error, setError] = useState(null);
   const [autoListen, setAutoListen] = useState(true); // Continuous loop mode
+  const [voices, setVoices] = useState([]);
+  const [selectedVoiceName, setSelectedVoiceName] = useState('default-female');
 
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -66,6 +68,23 @@ export default function VoiceConversation({ apiKey }) {
 
       recognitionRef.current = rec;
     }
+
+    const loadVoices = () => {
+      if ('speechSynthesis' in window) {
+        const availableVoices = window.speechSynthesis.getVoices();
+        const taVoices = availableVoices.filter(v => v.lang.toLowerCase().includes('ta'));
+        setVoices(taVoices);
+      }
+    };
+    loadVoices();
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    }
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+      }
+    };
   }, []);
 
   // Text-to-Speech playback
@@ -76,20 +95,31 @@ export default function VoiceConversation({ apiKey }) {
     setIsSpeaking(true);
 
     const utterance = new SpeechSynthesisUtterance(text);
+    const systemVoices = window.speechSynthesis.getVoices();
     
-    // Find Tamil Voice
-    const voices = window.speechSynthesis.getVoices();
-    const taVoice = voices.find(v => v.lang.includes('ta') || v.lang.includes('TA'));
-    
-    if (taVoice) {
-      utterance.voice = taVoice;
-      utterance.lang = 'ta-IN';
+    if (selectedVoiceName === 'default-male') {
+      const maleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
+        (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hemant') || v.name.toLowerCase().includes('valluvar')));
+      if (maleVoice) {
+        utterance.voice = maleVoice;
+      }
+      utterance.pitch = 0.8; // Lower pitch for simulated male voice
+    } else if (selectedVoiceName === 'default-female') {
+      const femaleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
+        (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('kalpana') || v.name.toLowerCase().includes('sabina') || v.name.toLowerCase().includes('google')));
+      if (femaleVoice) {
+        utterance.voice = femaleVoice;
+      }
+      utterance.pitch = 1.15; // Slightly higher pitch for simulated female voice
     } else {
-      // Fallback settings
-      utterance.lang = 'ta-IN';
+      const chosenVoice = systemVoices.find(v => v.name === selectedVoiceName);
+      if (chosenVoice) {
+        utterance.voice = chosenVoice;
+      }
     }
 
-    utterance.rate = 0.85;
+    utterance.lang = 'ta-IN';
+    utterance.rate = 0.8; // Slower rate for clear learner speech delivery
 
     utterance.onend = () => {
       setIsSpeaking(false);
@@ -221,16 +251,29 @@ Provide a brief, natural response in Tamil script. Do not write any English tran
               </span>
             </div>
           </div>
-          <button 
-            onClick={() => {
-              window.speechSynthesis.cancel();
-              setMessages([{ role: 'assistant', text: 'வணக்கம்! நாம் தமிழில் பேசலாமா?' }]);
-            }}
-            className="module-action-btn"
-            style={{ padding: '6px 12px', fontSize: '0.75rem' }}
-          >
-            Reset Chat
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <select
+              value={selectedVoiceName}
+              onChange={(e) => setSelectedVoiceName(e.target.value)}
+              style={{ padding: '6px 10px', fontSize: '0.75rem', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: 'pointer' }}
+            >
+              <option value="default-female">👩 Default Female Voice</option>
+              <option value="default-male">👨 Default Male Voice (Pitch 0.8x)</option>
+              {voices.map((v, i) => (
+                <option key={i} value={v.name}>{v.name} ({v.lang})</option>
+              ))}
+            </select>
+            <button 
+              onClick={() => {
+                window.speechSynthesis.cancel();
+                setMessages([{ role: 'assistant', text: 'வணக்கம்! நாம் தமிழில் பேசலாமா?' }]);
+              }}
+              className="module-action-btn"
+              style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+            >
+              Reset Chat
+            </button>
+          </div>
         </div>
 
         {/* Message logs */}

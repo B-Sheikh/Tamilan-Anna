@@ -115,8 +115,22 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
         }
 
         const data = await response.json();
-        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        const parsed = JSON.parse(rawText.trim());
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        
+        // Robust JSON extraction
+        let parsed;
+        try {
+          const start = rawText.indexOf('{');
+          const end = rawText.lastIndexOf('}');
+          if (start !== -1 && end !== -1 && end > start) {
+            parsed = JSON.parse(rawText.substring(start, end + 1));
+          } else {
+            parsed = JSON.parse(rawText.trim());
+          }
+        } catch (parseErr) {
+          console.error("Failed to parse AI JSON response. Raw output:", rawText);
+          throw new Error("Invalid response format from AI. Please try again.");
+        }
 
         setResults(parsed);
         const errorCount = parsed.errors?.length || 0;
