@@ -89,59 +89,92 @@ export default function VoiceConversation({ apiKey }) {
 
   // Text-to-Speech playback
   const speakText = (text) => {
-    if (!('speechSynthesis' in window)) return;
-    
-    window.speechSynthesis.cancel();
-    setIsSpeaking(true);
+    if ('speechSynthesis' in window) {
+      const systemVoices = window.speechSynthesis.getVoices();
+      const hasTaVoice = systemVoices.some(v => v.lang.toLowerCase().includes('ta'));
+      
+      if (hasTaVoice) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(true);
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    const systemVoices = window.speechSynthesis.getVoices();
-    
-    if (selectedVoiceName === 'default-male') {
-      const maleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
-        (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hemant') || v.name.toLowerCase().includes('valluvar')));
-      if (maleVoice) {
-        utterance.voice = maleVoice;
-      } else {
-        const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
-        if (fallbackTa) utterance.voice = fallbackTa;
-      }
-      utterance.pitch = 0.8; // Lower pitch for simulated male voice
-    } else if (selectedVoiceName === 'default-female') {
-      const femaleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
-        (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('kalpana') || v.name.toLowerCase().includes('sabina') || v.name.toLowerCase().includes('google')));
-      if (femaleVoice) {
-        utterance.voice = femaleVoice;
-      } else {
-        const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
-        if (fallbackTa) utterance.voice = fallbackTa;
-      }
-      utterance.pitch = 1.15; // Slightly higher pitch for simulated female voice
-    } else {
-      const chosenVoice = systemVoices.find(v => v.name === selectedVoiceName);
-      if (chosenVoice) {
-        utterance.voice = chosenVoice;
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        if (selectedVoiceName === 'default-male') {
+          const maleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
+            (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hemant') || v.name.toLowerCase().includes('valluvar')));
+          if (maleVoice) {
+            utterance.voice = maleVoice;
+          } else {
+            const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
+            if (fallbackTa) utterance.voice = fallbackTa;
+          }
+          utterance.pitch = 0.8; // Lower pitch for simulated male voice
+        } else if (selectedVoiceName === 'default-female') {
+          const femaleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
+            (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('kalpana') || v.name.toLowerCase().includes('sabina') || v.name.toLowerCase().includes('google')));
+          if (femaleVoice) {
+            utterance.voice = femaleVoice;
+          } else {
+            const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
+            if (fallbackTa) utterance.voice = fallbackTa;
+          }
+          utterance.pitch = 1.15; // Slightly higher pitch for simulated female voice
+        } else {
+          const chosenVoice = systemVoices.find(v => v.name === selectedVoiceName);
+          if (chosenVoice) {
+            utterance.voice = chosenVoice;
+          }
+        }
+
+        utterance.lang = 'ta-IN';
+        utterance.rate = 0.8; // Slower rate for clear learner speech delivery
+
+        utterance.onend = () => {
+          setIsSpeaking(false);
+          // Auto-listen trigger once speaking finishes (creates hands-free loop)
+          if (autoListen && recognitionRef.current && !loading) {
+            setTimeout(() => {
+              startListening();
+            }, 300);
+          }
+        };
+
+        utterance.onerror = () => {
+          setIsSpeaking(false);
+        };
+
+        window.speechSynthesis.speak(utterance);
+        return;
       }
     }
 
-    utterance.lang = 'ta-IN';
-    utterance.rate = 0.8; // Slower rate for clear learner speech delivery
-
-    utterance.onend = () => {
+    // Cloud fallback for systems without Tamil voice packs
+    try {
+      setIsSpeaking(true);
+      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
+      const audio = new Audio(audioUrl);
+      
+      audio.onended = () => {
+        setIsSpeaking(false);
+        if (autoListen && recognitionRef.current && !loading) {
+          setTimeout(() => {
+            startListening();
+          }, 300);
+        }
+      };
+      
+      audio.onerror = () => {
+        setIsSpeaking(false);
+      };
+      
+      audio.play().catch(e => {
+        console.warn("Google TTS blocked by autoplay restrictions:", e);
+        setIsSpeaking(false);
+      });
+    } catch (err) {
+      console.error("Cloud speech fallback failed:", err);
       setIsSpeaking(false);
-      // Auto-listen trigger once speaking finishes (creates hands-free loop)
-      if (autoListen && recognitionRef.current && !loading) {
-        setTimeout(() => {
-          startListening();
-        }, 300);
-      }
-    };
-
-    utterance.onerror = () => {
-      setIsSpeaking(false);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    }
   };
 
   const startListening = () => {

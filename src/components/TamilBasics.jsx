@@ -240,16 +240,28 @@ export default function TamilBasics() {
   // Speech helper
   const speakLetter = (text) => {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
-      const taVoice = voices.find(v => v.lang.toLowerCase().includes('ta'));
-      if (taVoice) {
-        utterance.voice = taVoice;
+      const hasTaVoice = voices.some(v => v.lang.toLowerCase().includes('ta'));
+      if (hasTaVoice) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        const taVoice = voices.find(v => v.lang.toLowerCase().includes('ta'));
+        if (taVoice) {
+          utterance.voice = taVoice;
+        }
+        utterance.lang = 'ta-IN';
+        utterance.rate = 0.75;
+        window.speechSynthesis.speak(utterance);
+        return;
       }
-      utterance.lang = 'ta-IN';
-      utterance.rate = 0.75;
-      window.speechSynthesis.speak(utterance);
+    }
+    // Cloud fallback for systems without Tamil voice packs
+    try {
+      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
+      const audio = new Audio(audioUrl);
+      audio.play().catch(e => console.warn("Google TTS blocked by autoplay restrictions:", e));
+    } catch (err) {
+      console.error("Cloud speech fallback failed:", err);
     }
   };
 
