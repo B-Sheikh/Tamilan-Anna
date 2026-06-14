@@ -102,6 +102,9 @@ export default function VoiceConversation({ apiKey }) {
         (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hemant') || v.name.toLowerCase().includes('valluvar')));
       if (maleVoice) {
         utterance.voice = maleVoice;
+      } else {
+        const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
+        if (fallbackTa) utterance.voice = fallbackTa;
       }
       utterance.pitch = 0.8; // Lower pitch for simulated male voice
     } else if (selectedVoiceName === 'default-female') {
@@ -109,6 +112,9 @@ export default function VoiceConversation({ apiKey }) {
         (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('kalpana') || v.name.toLowerCase().includes('sabina') || v.name.toLowerCase().includes('google')));
       if (femaleVoice) {
         utterance.voice = femaleVoice;
+      } else {
+        const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
+        if (fallbackTa) utterance.voice = fallbackTa;
       }
       utterance.pitch = 1.15; // Slightly higher pitch for simulated female voice
     } else {

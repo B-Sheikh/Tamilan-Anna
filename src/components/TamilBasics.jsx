@@ -238,24 +238,18 @@ export default function TamilBasics() {
   }, []);
 
   // Speech helper
-  const speakLetter = (text, soundTranslit = '') => {
+  const speakLetter = (text) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const voices = window.speechSynthesis.getVoices();
-      const taVoice = voices.find(v => v.lang.includes('ta') || v.lang.includes('TA'));
       const utterance = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+      const taVoice = voices.find(v => v.lang.toLowerCase().includes('ta'));
       if (taVoice) {
         utterance.voice = taVoice;
-        utterance.lang = 'ta-IN';
-        utterance.rate = 0.75;
-        window.speechSynthesis.speak(utterance);
-      } else {
-        const fallbackText = soundTranslit || text;
-        const fallbackUtterance = new SpeechSynthesisUtterance(fallbackText);
-        fallbackUtterance.lang = 'en-US';
-        fallbackUtterance.rate = 0.8;
-        window.speechSynthesis.speak(fallbackUtterance);
       }
+      utterance.lang = 'ta-IN';
+      utterance.rate = 0.75;
+      window.speechSynthesis.speak(utterance);
     }
   };
 
