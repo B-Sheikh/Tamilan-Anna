@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GraduationCap, Volume2, Sparkles, BookOpen, Layers, CheckCircle2, AlertCircle, PenTool, Gamepad2, RotateCcw } from 'lucide-react';
 
+let activeAudio = null;
+
 export default function TamilBasics() {
   const [activeSubTab, setActiveSubTab] = useState('vowels');
 
@@ -239,31 +241,50 @@ export default function TamilBasics() {
 
   // Speech helper
   const speakLetter = (text) => {
+    // Stop any currently playing audio element
+    if (activeAudio) {
+      try {
+        activeAudio.pause();
+        activeAudio.currentTime = 0;
+      } catch (e) {}
+    }
+
     if ('speechSynthesis' in window) {
-      const voices = window.speechSynthesis.getVoices();
-      const hasTaVoice = voices.some(v => v.lang.toLowerCase().includes('ta'));
-      if (hasTaVoice) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        const taVoice = voices.find(v => v.lang.toLowerCase().includes('ta'));
-        if (taVoice) {
-          utterance.voice = taVoice;
-        }
-        utterance.lang = 'ta-IN';
-        utterance.rate = 0.75;
-        window.speechSynthesis.speak(utterance);
+      window.speechSynthesis.cancel();
+    }
+
+    // 1. Try Google Cloud TTS first if online (guarantees high quality pronunciation on all systems)
+    if (navigator.onLine) {
+      try {
+        const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
+        const audio = new Audio(audioUrl);
+        activeAudio = audio;
+        audio.play().catch(e => {
+          console.warn("Google TTS play failed, trying local synthesis:", e);
+          speakLocal(text);
+        });
         return;
+      } catch (err) {
+        console.warn("Google TTS error, trying local synthesis:", err);
       }
     }
-    // Cloud fallback for systems without Tamil voice packs
-    try {
-      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
-      const audio = document.createElement('audio');
-      audio.referrerPolicy = 'no-referrer';
-      audio.src = audioUrl;
-      audio.play().catch(e => console.warn("Google TTS blocked by autoplay restrictions:", e));
-    } catch (err) {
-      console.error("Cloud speech fallback failed:", err);
+    
+    // 2. Local fallback if offline
+    speakLocal(text);
+  };
+
+  const speakLocal = (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+      const taVoice = voices.find(v => v.lang.toLowerCase().includes('ta'));
+      if (taVoice) {
+        utterance.voice = taVoice;
+      }
+      utterance.lang = 'ta-IN';
+      utterance.rate = 0.75;
+      window.speechSynthesis.speak(utterance);
     }
   };
 

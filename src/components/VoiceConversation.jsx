@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Volume2, Sparkles, RefreshCw, Send, AlertCircle, VolumeX } from 'lucide-react';
 
+let activeAudio = null;
+
 export default function VoiceConversation({ apiKey }) {
   const [messages, setMessages] = useState([
     { role: 'assistant', text: 'வணக்கம்! நாம் தமிழில் பேசலாமா? நீங்கள் என்னைப் பற்றி அல்லது உங்கள் நாளைப் பற்றி பேசலாம்.' }
@@ -13,7 +15,7 @@ export default function VoiceConversation({ apiKey }) {
   const [error, setError] = useState(null);
   const [autoListen, setAutoListen] = useState(true); // Continuous loop mode
   const [voices, setVoices] = useState([]);
-  const [selectedVoiceName, setSelectedVoiceName] = useState('default-female');
+  const [selectedVoiceName, setSelectedVoiceName] = useState('google-cloud-tts');
 
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -89,12 +91,23 @@ export default function VoiceConversation({ apiKey }) {
 
   // Text-to-Speech playback
   const speakText = (text) => {
+    // Stop any active audio player
+    if (activeAudio) {
+      try {
+        activeAudio.pause();
+        activeAudio.currentTime = 0;
+      } catch (e) {}
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
     if ('speechSynthesis' in window) {
       const systemVoices = window.speechSynthesis.getVoices();
       const hasTaVoice = systemVoices.some(v => v.lang.toLowerCase().includes('ta'));
       
-      if (hasTaVoice) {
-        window.speechSynthesis.cancel();
+      if (hasTaVoice && selectedVoiceName !== 'google-cloud-tts') {
         setIsSpeaking(true);
 
         const utterance = new SpeechSynthesisUtterance(text);
@@ -152,9 +165,8 @@ export default function VoiceConversation({ apiKey }) {
     try {
       setIsSpeaking(true);
       const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
-      const audio = document.createElement('audio');
-      audio.referrerPolicy = 'no-referrer';
-      audio.src = audioUrl;
+      const audio = new Audio(audioUrl);
+      activeAudio = audio;
       
       audio.onended = () => {
         setIsSpeaking(false);

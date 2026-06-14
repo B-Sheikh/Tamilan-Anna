@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Volume2, Mic, MicOff, Check, AlertCircle, ChevronRight, Award, Play } from 'lucide-react';
 
+let activeAudio = null;
+
 export default function Conversations({ apiKey, onLogActivity }) {
   const [selectedScenario, setSelectedScenario] = useState(0);
   const [currentTurn, setCurrentTurn] = useState(0);
@@ -10,7 +12,7 @@ export default function Conversations({ apiKey, onLogActivity }) {
   const [pronunciationScore, setPronunciationScore] = useState(null);
   const [recognitionSupported, setRecognitionSupported] = useState(false);
   const [voices, setVoices] = useState([]);
-  const [selectedVoiceName, setSelectedVoiceName] = useState('default-female');
+  const [selectedVoiceName, setSelectedVoiceName] = useState('google-cloud-tts');
   
   let recognition = null;
 
@@ -312,14 +314,23 @@ export default function Conversations({ apiKey, onLogActivity }) {
 
   // Text-To-Speech (TTS) using native SpeechSynthesis
   const speakText = (text) => {
+    // Stop any active audio player
+    if (activeAudio) {
+      try {
+        activeAudio.pause();
+        activeAudio.currentTime = 0;
+      } catch (e) {}
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
     if ('speechSynthesis' in window) {
       const systemVoices = window.speechSynthesis.getVoices();
       const hasTaVoice = systemVoices.some(v => v.lang.toLowerCase().includes('ta'));
       
-      if (hasTaVoice) {
-        // Cancel existing speech
-        window.speechSynthesis.cancel();
-        
+      if (hasTaVoice && selectedVoiceName !== 'google-cloud-tts') {
         const utterance = new SpeechSynthesisUtterance(text);
         
         if (selectedVoiceName === 'default-male') {
@@ -359,9 +370,8 @@ export default function Conversations({ apiKey, onLogActivity }) {
     // Cloud fallback for systems without Tamil voice packs
     try {
       const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
-      const audio = document.createElement('audio');
-      audio.referrerPolicy = 'no-referrer';
-      audio.src = audioUrl;
+      const audio = new Audio(audioUrl);
+      activeAudio = audio;
       audio.play().catch(e => console.warn("Google TTS blocked by autoplay restrictions:", e));
     } catch (err) {
       console.error("Cloud speech fallback failed:", err);
@@ -518,8 +528,9 @@ export default function Conversations({ apiKey, onLogActivity }) {
                 onChange={(e) => setSelectedVoiceName(e.target.value)}
                 style={{ padding: '4px 8px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#ffffff', cursor: 'pointer' }}
               >
-                <option value="default-female">👩 Default Female Voice</option>
-                <option value="default-male">👨 Default Male Voice (Pitch 0.8x)</option>
+                <option value="google-cloud-tts">✨ Google Cloud Pronunciation (High Quality)</option>
+                <option value="default-female">👩 Default Female Voice (Local synthesis)</option>
+                <option value="default-male">👨 Default Male Voice (Local synthesis)</option>
                 {voices.map((v, i) => (
                   <option key={i} value={v.name}>{v.name} ({v.lang})</option>
                 ))}
