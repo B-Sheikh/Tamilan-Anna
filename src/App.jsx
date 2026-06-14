@@ -5,6 +5,8 @@ import VideoSection from './components/VideoSection';
 import TamilKeyboard from './components/TamilKeyboard';
 import TamilBasics from './components/TamilBasics';
 import VoiceConversation from './components/VoiceConversation';
+import Assignments from './components/Assignments';
+import Scheduler from './components/Scheduler';
 import {
   BookOpen,
   MessageSquare,
@@ -26,7 +28,10 @@ import {
   CheckCircle,
   Volume2,
   Keyboard,
-  Mic
+  Mic,
+  ClipboardList,
+  Calendar,
+  AlertCircle
 } from 'lucide-react';
 
 
@@ -44,12 +49,17 @@ export default function App() {
   // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 
-  // Custom user level profile state
+  // Custom user level profile & login state
   const [loginForm, setLoginForm] = useState({
+    username: '',
+    pin: '',
     name: '',
     level: 'beginner',
-    pin: ''
+    role: 'student'
   });
+  
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [loginError, setLoginError] = useState(null);
 
   // User Stats & Activity Tracker
   const [stats, setStats] = useState({
@@ -158,9 +168,19 @@ export default function App() {
     setTutorLoading(false);
   };
 
-  // Load user from localStorage
+  // Load user from localStorage & Initialize users list
   useEffect(() => {
-    const savedUser = localStorage.getItem('tamilan_user');
+    // Check/initialize users list
+    const existingList = localStorage.getItem('tamilan_users_list');
+    if (!existingList) {
+      const defaultUsers = [
+        { name: "Admin Instructor", username: "admin", pin: "admin123", role: "admin", level: "advanced" },
+        { name: "Student Demo", username: "student", pin: "1234", role: "student", level: "beginner" }
+      ];
+      localStorage.setItem('tamilan_users_list', JSON.stringify(defaultUsers));
+    }
+
+    const savedUser = localStorage.getItem('tamilan_current_user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
@@ -168,19 +188,50 @@ export default function App() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (!loginForm.name.trim()) return;
+    setLoginError(null);
+    const users = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
+    const matched = users.find(u => u.username === loginForm.username && u.pin === loginForm.pin);
+    if (matched) {
+      localStorage.setItem('tamilan_current_user', JSON.stringify(matched));
+      setUser(matched);
+      setLoginForm({ username: '', pin: '', name: '', level: 'beginner', role: 'student' });
+    } else {
+      setLoginError("Invalid username or PIN. Hint: Admin is 'admin' / 'admin123'");
+    }
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    setLoginError(null);
+    if (!loginForm.username.trim() || !loginForm.pin.trim() || !loginForm.name.trim()) {
+      setLoginError("Please fill in all registration fields.");
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
+    if (users.some(u => u.username === loginForm.username)) {
+      setLoginError("Username is already taken. Try another!");
+      return;
+    }
 
     const newUser = {
-      name: loginForm.name,
-      level: loginForm.level
+      username: loginForm.username.trim().toLowerCase(),
+      pin: loginForm.pin,
+      name: loginForm.name.trim(),
+      level: loginForm.level,
+      role: loginForm.role
     };
 
-    localStorage.setItem('tamilan_user', JSON.stringify(newUser));
+    const updated = [...users, newUser];
+    localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
+    localStorage.setItem('tamilan_current_user', JSON.stringify(newUser));
     setUser(newUser);
+    setIsRegisterMode(false);
+    setLoginForm({ username: '', pin: '', name: '', level: 'beginner', role: 'student' });
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('tamilan_user');
+    localStorage.removeItem('tamilan_current_user');
     setUser(null);
     setShowLogin(false);
     setActiveTab('dashboard');
@@ -276,7 +327,7 @@ export default function App() {
               Tamilan Anna
             </h2>
           </div>
-          <button onClick={() => setShowLogin(true)} className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
+          <button onClick={() => { setIsRegisterMode(false); setLoginError(null); setShowLogin(true); }} className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
             Enter Classroom
           </button>
         </header>
@@ -295,7 +346,7 @@ export default function App() {
               A quiet and clean digital space built to practice Tamil conversations with pronunciation feedback, correct spelling mistakes, and access structured TVA lessons.
             </p>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => setShowLogin(true)} className="btn-primary" style={{ padding: '14px 28px', fontSize: '0.95rem' }}>
+              <button onClick={() => { setIsRegisterMode(true); setLoginError(null); setShowLogin(true); }} className="btn-primary" style={{ padding: '14px 28px', fontSize: '0.95rem' }}>
                 Create Study Card <ArrowRight size={16} />
               </button>
             </div>
@@ -442,64 +493,129 @@ export default function App() {
     );
   }
 
-  // 2. LOGIN PAGE
+  // 2. LOGIN & SIGNUP PAGE
   if (!user && showLogin) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px' }}>
-        <form onSubmit={handleLogin} className="glass-panel login-card animate-fade-in" style={{ padding: '40px', width: '100%', maxWidth: '450px', background: 'white' }}>
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px', background: 'var(--panel-bg)' }}>
+        <form onSubmit={isRegisterMode ? handleRegister : handleLogin} className="glass-panel login-card animate-fade-in" style={{ padding: '40px', width: '100%', maxWidth: '450px', background: 'white' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div className="logo-glow" style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'var(--accent-primary-glow)', color: 'var(--accent-primary)', marginBottom: '16px' }}>
               <GraduationCap size={44} />
             </div>
-            <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--text-primary)', fontWeight: 700 }}>Welcome Learner</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Create your customized student learning card</p>
+            <h1 style={{ fontSize: '1.8rem', margin: '0 0 8px 0', color: 'var(--text-primary)', fontWeight: 700 }}>
+              {isRegisterMode ? "Create Study Profile" : "Enter Tamilan Anna"}
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+              {isRegisterMode ? "Register a new student or instructor card" : "Access your interactive Tamil learning portal"}
+            </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {loginError && (
+            <div style={{ display: 'flex', gap: '8px', padding: '12px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid var(--error)', borderRadius: '4px', marginBottom: '20px', fontSize: '0.82rem', color: 'var(--error)' }}>
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>{loginError}</span>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Show Full Name field only during Registration */}
+            {isRegisterMode && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>FULL NAME</label>
+                <input
+                  type="text"
+                  value={loginForm.name}
+                  onChange={(e) => setLoginForm({ ...loginForm, name: e.target.value })}
+                  required
+                  className="form-input"
+                  placeholder="e.g. Abhishek"
+                />
+              </div>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>YOUR NAME</label>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>USERNAME</label>
               <input
                 type="text"
-                value={loginForm.name}
-                onChange={(e) => setLoginForm({ ...loginForm, name: e.target.value })}
+                value={loginForm.username}
+                onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
                 required
                 className="form-input"
-                placeholder="Enter your student name..."
+                placeholder="Enter username..."
               />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>YOUR TAMIL LEVEL</label>
-              <select
-                value={loginForm.level}
-                onChange={(e) => setLoginForm({ ...loginForm, level: e.target.value })}
-                className="form-input"
-                style={{ background: 'white' }}
-              >
-                <option value="beginner">Beginner (தொடக்க நிலை)</option>
-                <option value="intermediate">Intermediate (இடைநிலை)</option>
-                <option value="advanced">Advanced (உயர்நிலை)</option>
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>STUDENT PIN (Optional)</label>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>SECURITY PIN (PASSWORD)</label>
               <input
                 type="password"
                 value={loginForm.pin}
                 onChange={(e) => setLoginForm({ ...loginForm, pin: e.target.value })}
+                required
                 className="form-input"
-                placeholder="Pick any pin code..."
+                placeholder="Enter password..."
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
-              <button type="button" onClick={() => setShowLogin(false)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center' }}>
-                Back
+            {/* Show level and role options only during Registration */}
+            {isRegisterMode && (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>TAMIL LEVEL</label>
+                  <select
+                    value={loginForm.level}
+                    onChange={(e) => setLoginForm({ ...loginForm, level: e.target.value })}
+                    className="form-input"
+                    style={{ background: 'white' }}
+                  >
+                    <option value="beginner">Beginner (தொடக்க நிலை)</option>
+                    <option value="intermediate">Intermediate (இடைநிலை)</option>
+                    <option value="advanced">Advanced (உயர்நிலை)</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>PORTAL ROLE</label>
+                  <select
+                    value={loginForm.role}
+                    onChange={(e) => setLoginForm({ ...loginForm, role: e.target.value })}
+                    className="form-input"
+                    style={{ background: 'white' }}
+                  >
+                    <option value="student">Student (மாணவர்)</option>
+                    <option value="admin">Instructor / Admin (ஆசிரியர்)</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+              <button type="button" onClick={() => { setShowLogin(false); setLoginError(null); }} className="btn-secondary" style={{ flex: 1, justifyContent: 'center' }}>
+                Cancel
               </button>
               <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
-                Enter Sanctuary
+                {isRegisterMode ? "Create & Enter" : "Sign In"}
               </button>
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '10px' }}>
+              {isRegisterMode ? (
+                <button
+                  type="button"
+                  onClick={() => { setIsRegisterMode(false); setLoginError(null); }}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Already have a profile? Sign In here
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { setIsRegisterMode(true); setLoginError(null); }}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Need a student card? Create new profile
+                </button>
+              )}
             </div>
           </div>
         </form>
@@ -556,6 +672,8 @@ export default function App() {
               { id: 'voice_chat', label: 'Continuous Voice Chat', icon: Mic },
               { id: 'conversation', label: 'Conversations & Voice', icon: Volume2 },
               { id: 'grammar', label: 'Spelling & Grammar', icon: SpellCheck },
+              { id: 'assignments', label: 'Assignments', icon: ClipboardList },
+              { id: 'scheduler', label: 'Study Scheduler', icon: Calendar },
               { id: 'videos', label: 'TVA Video Academy', icon: Video }
             ].map(item => {
               const Icon = item.icon;
@@ -977,6 +1095,14 @@ export default function App() {
 
         {activeTab === 'voice_chat' && (
           <VoiceConversation apiKey={apiKey} />
+        )}
+
+        {activeTab === 'assignments' && (
+          <Assignments user={user} apiKey={apiKey} />
+        )}
+
+        {activeTab === 'scheduler' && (
+          <Scheduler user={user} />
         )}
       </main>
 
