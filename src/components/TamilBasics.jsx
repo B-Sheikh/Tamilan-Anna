@@ -258,7 +258,9 @@ export default function TamilBasics() {
     // Cloud fallback for systems without Tamil voice packs
     try {
       const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
-      const audio = new Audio(audioUrl);
+      const audio = document.createElement('audio');
+      audio.referrerPolicy = 'no-referrer';
+      audio.src = audioUrl;
       audio.play().catch(e => console.warn("Google TTS blocked by autoplay restrictions:", e));
     } catch (err) {
       console.error("Cloud speech fallback failed:", err);

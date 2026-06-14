@@ -152,7 +152,9 @@ export default function VoiceConversation({ apiKey }) {
     try {
       setIsSpeaking(true);
       const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
-      const audio = new Audio(audioUrl);
+      const audio = document.createElement('audio');
+      audio.referrerPolicy = 'no-referrer';
+      audio.src = audioUrl;
       
       audio.onended = () => {
         setIsSpeaking(false);
