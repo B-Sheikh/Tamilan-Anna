@@ -55,6 +55,10 @@ export default function TamilBasics() {
   const [brushColor, setBrushColor] = useState('#6366f1');
   const [brushSize, setBrushSize] = useState(8);
   const [tracingLetter, setTracingLetter] = useState('அ');
+  const [strokes, setStrokes] = useState([]);
+  const currentStrokeRef = useRef([]);
+  const [accuracyScore, setAccuracyScore] = useState(null);
+  const [accuracyFeedback, setAccuracyFeedback] = useState('');
 
   const allLetters = [...vowels.map(v => v.char), ...consonants.map(c => c.char)];
 
@@ -122,6 +126,7 @@ export default function TamilBasics() {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     setIsDrawing(true);
+    currentStrokeRef.current = [coords];
   };
 
   const draw = (e) => {
@@ -133,10 +138,166 @@ export default function TamilBasics() {
     const ctx = canvas.getContext('2d');
     ctx.lineTo(coords.x, coords.y);
     ctx.stroke();
+    currentStrokeRef.current.push(coords);
   };
 
   const stopDrawing = () => {
-    setIsDrawing(false);
+    if (isDrawing) {
+      setStrokes(prev => [...prev, currentStrokeRef.current]);
+      setIsDrawing(false);
+    }
+  };
+
+  const redrawCanvas = (nextStrokes) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 1. Draw notebook guidelines
+    ctx.strokeStyle = 'rgba(99, 102, 241, 0.25)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(20, 100);
+    ctx.lineTo(canvas.width - 20, 100);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(20, 300);
+    ctx.lineTo(canvas.width - 20, 300);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 2. Faint guide character
+    ctx.fillStyle = '#f1f5f9';
+    ctx.font = '220px "Outfit", "Noto Sans Tamil", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(tracingLetter, canvas.width / 2, canvas.height / 2);
+
+    // 3. User strokes
+    nextStrokes.forEach(stroke => {
+      if (stroke.length < 1) return;
+      ctx.beginPath();
+      ctx.moveTo(stroke[0].x, stroke[0].y);
+      ctx.strokeStyle = brushColor;
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      for (let i = 1; i < stroke.length; i++) {
+        ctx.lineTo(stroke[i].x, stroke[i].y);
+      }
+      ctx.stroke();
+    });
+  };
+
+  const handleResetCanvas = () => {
+    setStrokes([]);
+    setAccuracyScore(null);
+    setAccuracyFeedback('');
+    drawGuidelinesAndLetter();
+  };
+
+  const handleUndo = () => {
+    setStrokes(prev => {
+      const next = prev.slice(0, -1);
+      redrawCanvas(next);
+      return next;
+    });
+    setAccuracyScore(null);
+    setAccuracyFeedback('');
+  };
+
+  const checkAccuracy = () => {
+    if (strokes.length === 0) {
+      setAccuracyScore(null);
+      setAccuracyFeedback('Please draw or write something on the canvas first!');
+      return;
+    }
+
+    const checkW = 100;
+    const checkH = 100;
+
+    // 1. Offscreen target
+    const targetCanvas = document.createElement('canvas');
+    targetCanvas.width = checkW;
+    targetCanvas.height = checkH;
+    const tCtx = targetCanvas.getContext('2d');
+    tCtx.fillStyle = 'black';
+    tCtx.font = '60px "Outfit", "Noto Sans Tamil", sans-serif';
+    tCtx.textAlign = 'center';
+    tCtx.textBaseline = 'middle';
+    tCtx.fillText(tracingLetter, checkW / 2, checkH / 2);
+    const targetData = tCtx.getImageData(0, 0, checkW, checkH).data;
+
+    // 2. Offscreen user drawing
+    const userCanvas = document.createElement('canvas');
+    userCanvas.width = checkW;
+    userCanvas.height = checkH;
+    const uCtx = userCanvas.getContext('2d');
+    uCtx.strokeStyle = 'black';
+    uCtx.lineWidth = Math.max(3, brushSize * (checkW / 400));
+    uCtx.lineCap = 'round';
+    uCtx.lineJoin = 'round';
+
+    strokes.forEach(stroke => {
+      if (stroke.length < 1) return;
+      uCtx.beginPath();
+      const scaleX = checkW / 400;
+      const scaleY = checkH / 400;
+      uCtx.moveTo(stroke[0].x * scaleX, stroke[0].y * scaleY);
+      for (let i = 1; i < stroke.length; i++) {
+        uCtx.lineTo(stroke[i].x * scaleX, stroke[i].y * scaleY);
+      }
+      uCtx.stroke();
+    });
+    const userData = uCtx.getImageData(0, 0, checkW, checkH).data;
+
+    // 3. Pixel-wise overlapping calculation
+    let targetPixels = 0;
+    let userPixels = 0;
+    let overlapPixels = 0;
+
+    for (let i = 3; i < targetData.length; i += 4) {
+      const isT = targetData[i] > 20;
+      const isU = userData[i] > 20;
+
+      if (isT) targetPixels++;
+      if (isU) userPixels++;
+      if (isT && isU) overlapPixels++;
+    }
+
+    if (targetPixels === 0) {
+      setAccuracyScore(0);
+      setAccuracyFeedback('Could not evaluate character layout.');
+      return;
+    }
+
+    const coverage = overlapPixels / targetPixels;
+    const precision = userPixels > 0 ? (overlapPixels / userPixels) : 0;
+
+    // Balanced accuracy index (F1 score scaled)
+    let score = 0;
+    if (coverage + precision > 0) {
+      score = Math.round((2 * coverage * precision / (coverage + precision)) * 100);
+    }
+
+    // Slightly scale up for tolerance towards drawing speed & line width difference
+    score = Math.min(100, Math.round(score * 1.15));
+
+    setAccuracyScore(score);
+
+    if (score >= 85) {
+      setAccuracyFeedback('✨ Outstanding! Excellent Tamil handwriting accuracy!');
+    } else if (score >= 65) {
+      setAccuracyFeedback('👍 Good job! Very close, keep practicing.');
+    } else if (score >= 40) {
+      setAccuracyFeedback('😊 Nice try. Follow the faint guidelines more closely.');
+    } else {
+      setAccuracyFeedback('✍️ Practice makes perfect. Try to trace the character lines.');
+    }
   };
 
   // Memory Match Game States
@@ -213,9 +374,19 @@ export default function TamilBasics() {
   // Trigger draw when tracing subtab is loaded or tracing letter changed
   useEffect(() => {
     if (activeSubTab === 'drawing') {
+      setStrokes([]);
+      setAccuracyScore(null);
+      setAccuracyFeedback('');
       setTimeout(drawGuidelinesAndLetter, 100);
     }
   }, [activeSubTab, tracingLetter]);
+
+  // Redraw strokes when brush parameters change
+  useEffect(() => {
+    if (activeSubTab === 'drawing' && strokes.length > 0) {
+      redrawCanvas(strokes);
+    }
+  }, [brushColor, brushSize]);
 
   // Trigger game initialize when game subtab is active
   useEffect(() => {
@@ -766,22 +937,78 @@ export default function TamilBasics() {
               </div>
 
               {/* Utility actions */}
-              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
                 <button
-                  onClick={drawGuidelinesAndLetter}
+                  onClick={handleResetCanvas}
                   className="btn-secondary"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.85rem', padding: '10px' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.85rem', padding: '10px' }}
                 >
-                  <RotateCcw size={16} /> Reset Canvas
+                  <RotateCcw size={16} /> Reset
+                </button>
+                <button
+                  onClick={handleUndo}
+                  disabled={strokes.length === 0}
+                  className="btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.85rem', padding: '10px', opacity: strokes.length === 0 ? 0.5 : 1, cursor: strokes.length === 0 ? 'not-allowed' : 'pointer' }}
+                >
+                  Undo Stroke
                 </button>
                 <button
                   onClick={() => speakLetter(tracingLetter)}
-                  className="btn-primary"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.85rem', padding: '10px' }}
+                  className="btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.85rem', padding: '10px' }}
                 >
-                  <Volume2 size={16} /> Hear Pronunciation
+                  <Volume2 size={16} /> Pronounce
+                </button>
+                <button
+                  onClick={checkAccuracy}
+                  className="btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.85rem', padding: '10px' }}
+                >
+                  <Sparkles size={16} /> Check Accuracy
                 </button>
               </div>
+
+              {/* Accuracy Feedback */}
+              {accuracyScore !== null ? (
+                <div style={{
+                  marginTop: '16px',
+                  padding: '16px',
+                  background: accuracyScore >= 70 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+                  borderLeft: `4px solid ${accuracyScore >= 70 ? '#10b981' : '#ef4444'}`,
+                  borderRadius: '4px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Handwriting Score</span>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 800, color: accuracyScore >= 70 ? '#10b981' : '#ef4444' }}>
+                      {accuracyScore}%
+                    </span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
+                    <div style={{
+                      width: `${accuracyScore}%`,
+                      height: '100%',
+                      background: accuracyScore >= 70 ? '#10b981' : '#ef4444',
+                      transition: 'width 0.4s ease-out'
+                    }} />
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    {accuracyFeedback}
+                  </p>
+                </div>
+              ) : accuracyFeedback ? (
+                <div style={{
+                  marginTop: '16px',
+                  padding: '10px 14px',
+                  background: 'rgba(239, 68, 68, 0.08)',
+                  borderLeft: '4px solid #ef4444',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  color: 'var(--text-primary)'
+                }}>
+                  {accuracyFeedback}
+                </div>
+              ) : null}
             </div>
           </div>
 
