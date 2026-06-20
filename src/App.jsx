@@ -35,6 +35,109 @@ import {
 } from 'lucide-react';
 
 
+const placementQuestions = [
+  {
+    id: 1,
+    level: 'beginner',
+    question: "What is the first letter of the Tamil alphabet? (தமிழ் எழுத்துக்களின் முதல் எழுத்து எது?)",
+    options: ["ஆ (aa)", "இ (i)", "அ (a)", "உ (u)"],
+    answerIndex: 2,
+    explanation: "அ (a) is the first vowel (உயிர் எழுத்து) and the starting character of the Tamil language."
+  },
+  {
+    id: 2,
+    level: 'beginner',
+    question: "What is the Tamil word for 'Mother'? (அம்மா என்பதன் தமிழ் சொல்?)",
+    options: ["தந்தை (Father)", "அம்மா (Mother)", "அக்கா (Sister)", "தம்பி (Brother)"],
+    answerIndex: 1,
+    explanation: "அம்மா (Amma) means Mother in Tamil."
+  },
+  {
+    id: 3,
+    level: 'beginner',
+    question: "How do you say 'Hello / Greetings' in Tamil? (தமிழில் வாழ்த்துக்கள் எவ்வாறு கூறுவது?)",
+    options: ["நன்றி (Nandri)", "வணக்கம் (Vanakkam)", "எப்படி இருக்கிறீர்கள் (How are you)", "போய்வருகிறேன் (Goodbye)"],
+    answerIndex: 1,
+    explanation: "வணக்கம் (Vanakkam) is the standard respectful greeting in Tamil."
+  },
+  {
+    id: 4,
+    level: 'beginner',
+    question: "Which of the following is a Tamil vowel (உயிர் எழுத்து)?",
+    options: ["க் (k)", "ம் (m)", "ஈ (ee)", "த் (th)"],
+    answerIndex: 2,
+    explanation: "ஈ (ee) is a vowel. The others are consonants (மெய் எழுத்துக்கள்)."
+  },
+  {
+    id: 5,
+    level: 'intermediate',
+    question: "What is the correct Tamil translation of 'I am studying Tamil'?",
+    options: [
+      "நான் தமிழ் படிக்கிறேன் (Naan Thamizh padikkiren)",
+      "நான் தமிழ் படித்தேன் (Naan Thamizh padithen)",
+      "நான் தமிழ் படிப்பேன் (Naan Thamizh padippen)",
+      "எனக்கு தமிழ் தெரியும் (Enakku Thamizh theriyum)"
+    ],
+    answerIndex: 0,
+    explanation: "படிக்கிறேன் indicates present tense continuous study."
+  },
+  {
+    id: 6,
+    level: 'intermediate',
+    question: "Which sentence uses the correct case ending for 'He likes Tamil'?",
+    options: [
+      "அவனுக்கு தமிழ் பிடிக்கும் (Avanukku Thamizh pidikkum)",
+      "அவன் தமிழ் பிடிக்கும் (Avan Thamizh pidikkum)",
+      "அவளை தமிழ் பிடிக்கும் (Avalai Thamizh pidikkum)",
+      "அவர்கள் தமிழ் பிடிக்கும் (Avargal Thamizh pidikkum)"
+    ],
+    answerIndex: 0,
+    explanation: "In Tamil, the verb 'பிடிக்கும்' requires a dative case ending (-உக்கு) on the subject, thus 'அவனுக்கு'."
+  },
+  {
+    id: 7,
+    level: 'intermediate',
+    question: "What is the correct plural form of 'மரம்' (Tree) in Tamil?",
+    options: ["மரங்கள் (Marangal)", "மரம்கள் (Maramgal)", "மரமாக்கள் (Maramaakkal)", "மரசு (Marasu)"],
+    answerIndex: 0,
+    explanation: "Words ending with 'ம்' change the 'ம்' to 'ங்' when combined with the plural suffix 'கள்'."
+  },
+  {
+    id: 8,
+    level: 'advanced',
+    question: "Identify the correct progressive action verb structure (தொடர்வினை):",
+    options: [
+      "பறவைகள் பறந்துகொண்டிருக்கின்றன (Birds are flying)",
+      "பறவைகள் பறந்தன (Birds flew)",
+      "பறவைகள் பறக்கும் (Birds will fly)",
+      "பறவைகள் பறக்கின்றன (Birds fly)"
+    ],
+    answerIndex: 0,
+    explanation: "'பறந்துகொண்டிருக்கின்றன' is the present continuous form of flying."
+  },
+  {
+    id: 9,
+    level: 'advanced',
+    question: "Which of the following demonstrates a Tamil sandhi sound alteration rule (புணர்ச்சி விதி)?",
+    options: [
+      "கடல் + அலை = கடலலை",
+      "மண் + குடம் = மட்குடம்",
+      "பூ + சோலை = பூஞ்சோலை",
+      "All of the above (மேற்கூறிய அனைத்தும்)"
+    ],
+    answerIndex: 3,
+    explanation: "All show standard sandhi alterations (u+a combination, n+k assimilation, and nasal insertion)."
+  },
+  {
+    id: 10,
+    level: 'advanced',
+    question: "What is the primary literary meaning of the classical Tamil word 'ஒண்மை' (Onmai)?",
+    options: ["இருள் (Darkness)", "அறிவு / ஒளி / சிறப்பு (Knowledge/Light/Splendor)", "வெறுமை (Emptiness)", "வறுமை (Poverty)"],
+    answerIndex: 1,
+    explanation: "'ஒண்மை' is a classical word signifying brightness, brilliance, righteousness, or wisdom."
+  }
+];
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false); // Toggle between Landing Page & Login Page
@@ -57,6 +160,13 @@ export default function App() {
     level: 'beginner',
     role: 'student'
   });
+
+  // Placement Quiz States
+  const [placementQuizActive, setPlacementQuizActive] = useState(false);
+  const [quizCurrentIndex, setQuizCurrentIndex] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [placementEvaluation, setPlacementEvaluation] = useState(null); // { score, allottedLevel, finalLevel, aiReport }
+  const [aiPlacementLoading, setAiPlacementLoading] = useState(false);
   
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [loginError, setLoginError] = useState(null);
@@ -214,11 +324,109 @@ export default function App() {
       return;
     }
 
+    if (loginForm.role === 'student') {
+      // Trigger Placement Quiz Onboarding
+      setPlacementQuizActive(true);
+      setQuizCurrentIndex(0);
+      setQuizAnswers({});
+      setPlacementEvaluation(null);
+    } else {
+      // Admins/Instructors register directly with advanced level by default
+      const newUser = {
+        username: loginForm.username.trim().toLowerCase(),
+        pin: loginForm.pin,
+        name: loginForm.name.trim(),
+        level: 'advanced',
+        role: loginForm.role
+      };
+      const updated = [...users, newUser];
+      localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
+      localStorage.setItem('tamilan_current_user', JSON.stringify(newUser));
+      setUser(newUser);
+      setIsRegisterMode(false);
+      setLoginForm({ username: '', pin: '', name: '', level: 'beginner', role: 'student' });
+    }
+  };
+
+  const analyzePlacementQuizWithAI = async (score, answers) => {
+    setAiPlacementLoading(true);
+    let allotted = 'beginner';
+    if (score >= 8) allotted = 'advanced';
+    else if (score >= 5) allotted = 'intermediate';
+
+    // Check if Gemini key is available for AI analysis report
+    if (!apiKey || !isValidGeminiKey(apiKey)) {
+      let localReport = "";
+      if (allotted === 'advanced') {
+        localReport = "Fantastic! You possess a robust command of advanced Tamil vocabulary, grammar rules, and syntax structure. Ready to practice speaking fluently!";
+      } else if (allotted === 'intermediate') {
+        localReport = "Great job! You have solid intermediate skills and understand general sentence structure. Ready to focus on fluid conversations.";
+      } else {
+        localReport = "Welcome! You are starting your journey with core Tamil letters, sounds, and basic greetings. We will build your vocabulary step-by-step.";
+      }
+      setPlacementEvaluation({
+        score,
+        allottedLevel: allotted,
+        finalLevel: allotted,
+        aiReport: localReport
+      });
+      setAiPlacementLoading(false);
+      return;
+    }
+
+    const prompt = `A student just completed an onboarding Tamil placement quiz.
+Score: ${score}/10.
+Answers details:
+${placementQuestions.map((q, idx) => {
+  const isCorrect = answers[idx] === q.answerIndex;
+  return `Q${idx+1} (${q.level} level): ${q.question}
+User answered: "${q.options[answers[idx]] || 'No answer'}" (Correct answer: "${q.options[q.answerIndex]}") - ${isCorrect ? 'CORRECT' : 'WRONG'}`;
+}).join('\n')}
+
+Analyze their performance and write a concise, encouraging 2-sentence summary in English about their Tamil proficiency level and what they should focus on. Keep it friendly and motivational.`;
+
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
+    let report = `Placement evaluated. You scored ${score}/10. Allotted level: ${allotted.toUpperCase()}.`;
+    let success = false;
+
+    for (const model of modelsToTry) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          report = data.candidates?.[0]?.content?.parts?.[0]?.text || report;
+          success = true;
+          break;
+        }
+      } catch (err) {
+        console.warn(`Placement AI report failed with model ${model}:`, err.message);
+      }
+    }
+
+    setPlacementEvaluation({
+      score,
+      allottedLevel: allotted,
+      finalLevel: allotted,
+      aiReport: report
+    });
+    setAiPlacementLoading(false);
+  };
+
+  const handleFinalizePlacement = () => {
+    if (!placementEvaluation) return;
+    const users = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
     const newUser = {
       username: loginForm.username.trim().toLowerCase(),
       pin: loginForm.pin,
       name: loginForm.name.trim(),
-      level: loginForm.level,
+      level: placementEvaluation.finalLevel,
       role: loginForm.role
     };
 
@@ -227,6 +435,8 @@ export default function App() {
     localStorage.setItem('tamilan_current_user', JSON.stringify(newUser));
     setUser(newUser);
     setIsRegisterMode(false);
+    setPlacementQuizActive(false);
+    setPlacementEvaluation(null);
     setLoginForm({ username: '', pin: '', name: '', level: 'beginner', role: 'student' });
   };
 
@@ -495,6 +705,204 @@ export default function App() {
 
   // 2. LOGIN & SIGNUP PAGE
   if (!user && showLogin) {
+    if (placementQuizActive) {
+      const currentQuestion = placementQuestions[quizCurrentIndex];
+      const hasAnsweredCurrent = quizAnswers[quizCurrentIndex] !== undefined;
+
+      const handleSelectOption = (idx) => {
+        setQuizAnswers({ ...quizAnswers, [quizCurrentIndex]: idx });
+      };
+
+      const handleNextQuestion = () => {
+        if (quizCurrentIndex < placementQuestions.length - 1) {
+          setQuizCurrentIndex(quizCurrentIndex + 1);
+        } else {
+          // Calculate score and trigger AI analysis
+          let score = 0;
+          placementQuestions.forEach((q, idx) => {
+            if (quizAnswers[idx] === q.answerIndex) score++;
+          });
+          analyzePlacementQuizWithAI(score, quizAnswers);
+        }
+      };
+
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px', background: 'var(--panel-bg)' }}>
+          <div className="glass-panel login-card animate-fade-in" style={{ padding: '40px', width: '100%', maxWidth: '520px', background: 'white' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+              <GraduationCap style={{ color: 'var(--accent-primary)' }} size={28} />
+              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Onboarding Placement Quiz
+              </span>
+            </div>
+
+            {aiPlacementLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <RefreshCw className="animate-spin" size={44} style={{ color: 'var(--accent-primary)', margin: '0 auto 16px auto' }} />
+                <h3 style={{ fontSize: '1.2rem', color: 'var(--text-primary)', margin: '0 0 8px 0', fontWeight: 600 }}>Analyzing Proficiency...</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Comparing answers to construct your student level profile.</p>
+              </div>
+            ) : placementEvaluation ? (
+              <div>
+                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', background: 'var(--accent-primary-glow)', color: 'var(--accent-primary)', fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '16px' }}>
+                    {placementEvaluation.score}/10
+                  </div>
+                  <h3 style={{ fontSize: '1.4rem', color: 'var(--text-primary)', margin: '0 0 4px 0', fontWeight: 700 }}>Quiz Completed!</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>You have correctly answered {placementEvaluation.score} out of 10 questions.</p>
+                </div>
+
+                <div className="glass-panel" style={{ padding: '16px', background: 'rgba(99, 102, 241, 0.04)', borderRadius: '4px', marginBottom: '24px', border: '1px solid rgba(99, 102, 241, 0.1)' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>TUTOR ANNA'S EVALUATION</div>
+                  <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-primary)', lineHeight: 1.5, fontStyle: 'italic' }}>
+                    "{placementEvaluation.aiReport}"
+                  </p>
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                    ALLOTTED LEVEL: <span style={{ color: 'var(--accent-primary)', textDecoration: 'underline' }}>{placementEvaluation.allottedLevel.toUpperCase()}</span>
+                  </label>
+
+                  {placementEvaluation.allottedLevel === 'advanced' && (
+                    <div>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '12px' }}>
+                        You scored advanced level! Select a level to start with (you can override to beginner/intermediate):
+                      </p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {['advanced', 'intermediate', 'beginner'].map(lvl => (
+                          <button
+                            key={lvl}
+                            onClick={() => setPlacementEvaluation({ ...placementEvaluation, finalLevel: lvl })}
+                            className={placementEvaluation.finalLevel === lvl ? 'btn-primary' : 'btn-secondary'}
+                            style={{ justifyContent: 'space-between', padding: '12px 16px', width: '100%', border: '1px solid #cbd5e1' }}
+                            type="button"
+                          >
+                            <span>{lvl.toUpperCase() === 'ADVANCED' ? 'Advanced (உயர்நிலை) - Recommended' : lvl.toUpperCase() === 'INTERMEDIATE' ? 'Intermediate (இடைநிலை)' : 'Beginner (தொடக்க நிலை)'}</span>
+                            {placementEvaluation.finalLevel === lvl && <Check size={18} />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {placementEvaluation.allottedLevel === 'intermediate' && (
+                    <div>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '12px' }}>
+                        You scored intermediate level! Select a level to start with (you can override to beginner):
+                      </p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {['intermediate', 'beginner'].map(lvl => (
+                          <button
+                            key={lvl}
+                            onClick={() => setPlacementEvaluation({ ...placementEvaluation, finalLevel: lvl })}
+                            className={placementEvaluation.finalLevel === lvl ? 'btn-primary' : 'btn-secondary'}
+                            style={{ justifyContent: 'space-between', padding: '12px 16px', width: '100%', border: '1px solid #cbd5e1' }}
+                            type="button"
+                          >
+                            <span>{lvl.toUpperCase() === 'INTERMEDIATE' ? 'Intermediate (இடைநிலை) - Recommended' : 'Beginner (தொடக்க நிலை)'}</span>
+                            {placementEvaluation.finalLevel === lvl && <Check size={18} />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {placementEvaluation.allottedLevel === 'beginner' && (
+                    <div style={{ padding: '12px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Beginner (தொடக்க நிலை)</span>
+                      <p style={{ margin: '6px 0 0 0', color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                        Level locked to Beginner. You cannot change your level at this stage to ensure you build a proper foundation.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <button onClick={handleFinalizePlacement} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '0.95rem' }}>
+                  Finalize Profile & Start Learning
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div style={{ width: '100%', background: '#e2e8f0', height: '6px', borderRadius: '3px', marginBottom: '20px', overflow: 'hidden' }}>
+                  <div style={{ width: `${((quizCurrentIndex) / placementQuestions.length) * 100}%`, height: '100%', background: 'var(--accent-primary)', transition: 'width 0.3s' }} />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', fontWeight: 600 }}>
+                  <span>QUESTION {quizCurrentIndex + 1} OF {placementQuestions.length}</span>
+                  <span style={{ textTransform: 'uppercase', color: 'var(--accent-secondary)' }}>{currentQuestion.level} Level</span>
+                </div>
+
+                <h3 style={{ fontSize: '1.05rem', color: 'var(--text-primary)', fontWeight: 600, lineHeight: 1.5, marginBottom: '20px' }}>
+                  {currentQuestion.question}
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+                  {currentQuestion.options.map((opt, oIdx) => {
+                    const isSelected = quizAnswers[quizCurrentIndex] === oIdx;
+                    return (
+                      <button
+                        key={oIdx}
+                        onClick={() => handleSelectOption(oIdx)}
+                        type="button"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '12px 16px',
+                          border: isSelected ? '2px solid var(--accent-primary)' : '1px solid #cbd5e1',
+                          background: isSelected ? 'var(--accent-primary-glow)' : 'white',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          fontSize: '0.88rem',
+                          color: 'var(--text-primary)',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        <div style={{
+                          width: '18px',
+                          height: '18px',
+                          borderRadius: '50%',
+                          border: isSelected ? '5px solid var(--accent-primary)' : '2px solid #cbd5e1',
+                          marginRight: '12px',
+                          background: 'white',
+                          boxSizing: 'border-box'
+                        }} />
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    onClick={() => {
+                      setPlacementQuizActive(false);
+                      setPlacementEvaluation(null);
+                    }}
+                    className="btn-secondary"
+                    type="button"
+                    style={{ flex: 1, justifyContent: 'center' }}
+                  >
+                    Quit Setup
+                  </button>
+                  <button
+                    onClick={handleNextQuestion}
+                    disabled={!hasAnsweredCurrent}
+                    className="btn-primary"
+                    type="button"
+                    style={{ flex: 1, justifyContent: 'center', opacity: hasAnsweredCurrent ? 1 : 0.6, cursor: hasAnsweredCurrent ? 'pointer' : 'not-allowed' }}
+                  >
+                    {quizCurrentIndex === placementQuestions.length - 1 ? 'Finish & Analyze' : 'Next Question'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px', background: 'var(--panel-bg)' }}>
         <form onSubmit={isRegisterMode ? handleRegister : handleLogin} className="glass-panel login-card animate-fade-in" style={{ padding: '40px', width: '100%', maxWidth: '450px', background: 'white' }}>
@@ -557,23 +965,9 @@ export default function App() {
               />
             </div>
 
-            {/* Show level and role options only during Registration */}
+            {/* Show role and quiz notifications only during Registration */}
             {isRegisterMode && (
               <>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>TAMIL LEVEL</label>
-                  <select
-                    value={loginForm.level}
-                    onChange={(e) => setLoginForm({ ...loginForm, level: e.target.value })}
-                    className="form-input"
-                    style={{ background: 'white' }}
-                  >
-                    <option value="beginner">Beginner (தொடக்க நிலை)</option>
-                    <option value="intermediate">Intermediate (இடைநிலை)</option>
-                    <option value="advanced">Advanced (உயர்நிலை)</option>
-                  </select>
-                </div>
-
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>PORTAL ROLE</label>
                   <select
@@ -586,6 +980,16 @@ export default function App() {
                     <option value="admin">Instructor / Admin (ஆசிரியர்)</option>
                   </select>
                 </div>
+
+                {loginForm.role === 'student' ? (
+                  <div style={{ fontSize: '0.8rem', padding: '12px', background: 'rgba(99, 102, 241, 0.05)', border: '1px dashed var(--accent-primary)', borderRadius: '4px', color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                    📝 <strong>Tamil Level Placement:</strong> To personalize your experience, you will complete a 10-question placement quiz right after registration to dynamically determine your learning level.
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '0.8rem', padding: '12px', background: 'rgba(16, 185, 129, 0.05)', border: '1px dashed var(--success)', borderRadius: '4px', color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                    👑 <strong>Instructor Level:</strong> Instructors bypass the placement test and are automatically granted Advanced (உயர்நிலை) status.
+                  </div>
+                )}
               </>
             )}
 
@@ -594,7 +998,7 @@ export default function App() {
                 Cancel
               </button>
               <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
-                {isRegisterMode ? "Create & Enter" : "Sign In"}
+                {isRegisterMode ? "Register Profile" : "Sign In"}
               </button>
             </div>
 
