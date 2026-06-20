@@ -169,8 +169,7 @@ export default function App() {
     state: '',
     city: '',
     postalCode: '',
-    branch: 'Select',
-    course: 'Select'
+    branch: 'Select'
   };
 
   const [loginForm, setLoginForm] = useState(initialLoginFormState);
@@ -340,8 +339,8 @@ export default function App() {
       setLoginError("Please fill in all required fields marked with *");
       return;
     }
-    if (loginForm.country === 'Select' || loginForm.branch === 'Select' || loginForm.course === 'Select') {
-      setLoginError("Please select a valid Country, Branch, and Course.");
+    if (loginForm.country === 'Select' || loginForm.branch === 'Select') {
+      setLoginError("Please select a valid Country and Branch.");
       return;
     }
     if (!loginForm.photo) {
@@ -380,8 +379,7 @@ export default function App() {
         state: loginForm.state.trim(),
         city: loginForm.city.trim(),
         postalCode: loginForm.postalCode.trim(),
-        branch: loginForm.branch,
-        course: loginForm.course
+        branch: loginForm.branch
       };
       const updated = [...users, newUser];
       localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
@@ -463,7 +461,6 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
       city: loginForm.city.trim(),
       postalCode: loginForm.postalCode.trim(),
       branch: loginForm.branch,
-      course: loginForm.course,
       placementScore: score,
       placementReport: report
     };
@@ -1261,45 +1258,26 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
                     </div>
                   </div>
 
-                  {/* Branch * & Course * */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>BRANCH *</label>
-                      <select
-                        value={loginForm.branch}
-                        onChange={(e) => setLoginForm({ ...loginForm, branch: e.target.value })}
-                        required
-                        className="form-input"
-                        style={{ background: 'white' }}
-                      >
-                        <option value="Select">Select</option>
-                        <option value="Chennai">Chennai</option>
-                        <option value="Coimbatore">Coimbatore</option>
-                        <option value="Madurai">Madurai</option>
-                        <option value="Trichy">Trichy</option>
-                        <option value="Jaffna">Jaffna</option>
-                        <option value="Singapore Central">Singapore Central</option>
-                        <option value="Kuala Lumpur">Kuala Lumpur</option>
-                        <option value="Virtual Campus">Virtual Campus</option>
-                      </select>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>COURSE *</label>
-                      <select
-                        value={loginForm.course}
-                        onChange={(e) => setLoginForm({ ...loginForm, course: e.target.value })}
-                        required
-                        className="form-input"
-                        style={{ background: 'white' }}
-                      >
-                        <option value="Select">Select</option>
-                        <option value="Certificate in Basic Tamil">Certificate in Basic Tamil (அடிப்படைத் தமிழ்)</option>
-                        <option value="Diploma in Tamil Language">Diploma in Tamil Language</option>
-                        <option value="Tamil Literature and Grammar">Tamil Literature and Grammar</option>
-                        <option value="Spoken Tamil Academy">Spoken Tamil Academy</option>
-                      </select>
-                    </div>
+                  {/* Branch * */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>BRANCH *</label>
+                    <select
+                      value={loginForm.branch}
+                      onChange={(e) => setLoginForm({ ...loginForm, branch: e.target.value })}
+                      required
+                      className="form-input"
+                      style={{ background: 'white' }}
+                    >
+                      <option value="Select">Select</option>
+                      <option value="Chennai">Chennai</option>
+                      <option value="Coimbatore">Coimbatore</option>
+                      <option value="Madurai">Madurai</option>
+                      <option value="Trichy">Trichy</option>
+                      <option value="Jaffna">Jaffna</option>
+                      <option value="Singapore Central">Singapore Central</option>
+                      <option value="Kuala Lumpur">Kuala Lumpur</option>
+                      <option value="Virtual Campus">Virtual Campus</option>
+                    </select>
                   </div>
                 </div>
               </div>
