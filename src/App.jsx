@@ -314,7 +314,14 @@ export default function App() {
     e.preventDefault();
     setLoginError(null);
     const users = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
-    const matched = users.find(u => u.username === loginForm.username && u.pin === loginForm.pin);
+    const typedUsername = (loginForm.username || '').trim().toLowerCase();
+    const typedPin = (loginForm.pin || '').trim();
+
+    const matched = users.find(u => 
+      (u.username || '').toLowerCase() === typedUsername && 
+      (u.pin || '').trim() === typedPin
+    );
+
     if (matched) {
       localStorage.setItem('tamilan_current_user', JSON.stringify(matched));
       setUser(matched);
