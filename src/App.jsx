@@ -152,14 +152,28 @@ export default function App() {
   // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 
-  // Custom user level profile & login state
-  const [loginForm, setLoginForm] = useState({
+  const initialLoginFormState = {
     username: '',
     pin: '',
     name: '',
     level: 'beginner',
-    role: 'student'
-  });
+    role: 'student',
+    email: '',
+    phoneCountry: '+91',
+    phone: '',
+    dob: '',
+    gender: 'Male',
+    photo: '',
+    address: '',
+    country: 'Select',
+    state: '',
+    city: '',
+    postalCode: '',
+    branch: 'Select',
+    course: 'Select'
+  };
+
+  const [loginForm, setLoginForm] = useState(initialLoginFormState);
 
   // Placement Quiz States
   const [placementQuizActive, setPlacementQuizActive] = useState(false);
@@ -305,7 +319,7 @@ export default function App() {
     if (matched) {
       localStorage.setItem('tamilan_current_user', JSON.stringify(matched));
       setUser(matched);
-      setLoginForm({ username: '', pin: '', name: '', level: 'beginner', role: 'student' });
+      setLoginForm(initialLoginFormState);
     } else {
       setLoginError("Invalid username or PIN. Hint: Admin is 'admin' / 'admin123'");
     }
@@ -314,8 +328,24 @@ export default function App() {
   const handleRegister = (e) => {
     e.preventDefault();
     setLoginError(null);
+    
+    // Core validations
     if (!loginForm.username.trim() || !loginForm.pin.trim() || !loginForm.name.trim()) {
       setLoginError("Please fill in all registration fields.");
+      return;
+    }
+    
+    // Additional Profile Field validations
+    if (!loginForm.email.trim() || !loginForm.phone.trim() || !loginForm.dob || !loginForm.address.trim() || !loginForm.state.trim() || !loginForm.postalCode.trim()) {
+      setLoginError("Please fill in all required fields marked with *");
+      return;
+    }
+    if (loginForm.country === 'Select' || loginForm.branch === 'Select' || loginForm.course === 'Select') {
+      setLoginError("Please select a valid Country, Branch, and Course.");
+      return;
+    }
+    if (!loginForm.photo) {
+      setLoginError("Please choose/upload a learner photo.");
       return;
     }
 
@@ -338,14 +368,27 @@ export default function App() {
         pin: loginForm.pin,
         name: loginForm.name.trim(),
         level: 'advanced',
-        role: loginForm.role
+        role: loginForm.role,
+        email: loginForm.email.trim(),
+        phoneCountry: loginForm.phoneCountry,
+        phone: loginForm.phone.trim(),
+        dob: loginForm.dob,
+        gender: loginForm.gender,
+        photo: loginForm.photo,
+        address: loginForm.address.trim(),
+        country: loginForm.country,
+        state: loginForm.state.trim(),
+        city: loginForm.city.trim(),
+        postalCode: loginForm.postalCode.trim(),
+        branch: loginForm.branch,
+        course: loginForm.course
       };
       const updated = [...users, newUser];
       localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
       localStorage.setItem('tamilan_current_user', JSON.stringify(newUser));
       setUser(newUser);
       setIsRegisterMode(false);
-      setLoginForm({ username: '', pin: '', name: '', level: 'beginner', role: 'student' });
+      setLoginForm(initialLoginFormState);
     }
   };
 
@@ -428,7 +471,20 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
       pin: loginForm.pin,
       name: loginForm.name.trim(),
       level: placementEvaluation.finalLevel,
-      role: loginForm.role
+      role: loginForm.role,
+      email: loginForm.email.trim(),
+      phoneCountry: loginForm.phoneCountry,
+      phone: loginForm.phone.trim(),
+      dob: loginForm.dob,
+      gender: loginForm.gender,
+      photo: loginForm.photo,
+      address: loginForm.address.trim(),
+      country: loginForm.country,
+      state: loginForm.state.trim(),
+      city: loginForm.city.trim(),
+      postalCode: loginForm.postalCode.trim(),
+      branch: loginForm.branch,
+      course: loginForm.course
     };
 
     const updated = [...users, newUser];
@@ -438,7 +494,7 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
     setIsRegisterMode(false);
     setPlacementQuizActive(false);
     setPlacementEvaluation(null);
-    setLoginForm({ username: '', pin: '', name: '', level: 'beginner', role: 'student' });
+    setLoginForm(initialLoginFormState);
   };
 
   const handleLogout = () => {
@@ -906,7 +962,7 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
 
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px', background: 'var(--panel-bg)' }}>
-        <form onSubmit={isRegisterMode ? handleRegister : handleLogin} className="glass-panel login-card animate-fade-in" style={{ padding: '40px', width: '100%', maxWidth: '450px', background: 'white' }}>
+        <form onSubmit={isRegisterMode ? handleRegister : handleLogin} className="glass-panel login-card animate-fade-in" style={{ padding: '40px', width: '100%', maxWidth: isRegisterMode ? '900px' : '450px', background: 'white', transition: 'max-width 0.3s ease-in-out' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div className="logo-glow" style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'var(--accent-primary-glow)', color: 'var(--accent-primary)', marginBottom: '16px' }}>
               <GraduationCap size={44} />
@@ -927,61 +983,367 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Show Full Name field only during Registration */}
-            {isRegisterMode && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>FULL NAME</label>
-                <input
-                  type="text"
-                  value={loginForm.name}
-                  onChange={(e) => setLoginForm({ ...loginForm, name: e.target.value })}
-                  required
-                  className="form-input"
-                  placeholder="e.g. Abhishek"
-                />
-              </div>
-            )}
+            {isRegisterMode ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+                gap: '24px',
+                textAlign: 'left'
+              }}>
+                {/* Left Column */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Student name (in English) * */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>STUDENT NAME (IN ENGLISH) *</label>
+                    <input
+                      type="text"
+                      value={loginForm.name}
+                      onChange={(e) => setLoginForm({ ...loginForm, name: e.target.value })}
+                      required
+                      className="form-input"
+                      placeholder="Enter your name"
+                    />
+                  </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>USERNAME</label>
-              <input
-                type="text"
-                value={loginForm.username}
-                onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
-                required
-                className="form-input"
-                placeholder="Enter username..."
-              />
-            </div>
+                  {/* Username & PIN */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>USERNAME *</label>
+                      <input
+                        type="text"
+                        value={loginForm.username}
+                        onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                        required
+                        className="form-input"
+                        placeholder="Enter username"
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>SECURITY PIN (PASSWORD) *</label>
+                      <input
+                        type="password"
+                        value={loginForm.pin}
+                        onChange={(e) => setLoginForm({ ...loginForm, pin: e.target.value })}
+                        required
+                        className="form-input"
+                        placeholder="Enter PIN"
+                      />
+                    </div>
+                  </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>SECURITY PIN (PASSWORD)</label>
-              <input
-                type="password"
-                value={loginForm.pin}
-                onChange={(e) => setLoginForm({ ...loginForm, pin: e.target.value })}
-                required
-                className="form-input"
-                placeholder="Enter password..."
-              />
-            </div>
+                  {/* Email * */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>EMAIL *</label>
+                    <input
+                      type="email"
+                      value={loginForm.email}
+                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                      required
+                      className="form-input"
+                      placeholder="Enter your email address"
+                    />
+                  </div>
 
-            {/* Show role and quiz notifications only during Registration */}
-            {isRegisterMode && (
-              <>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>PORTAL ROLE</label>
-                  <select
-                    value={loginForm.role}
-                    onChange={(e) => setLoginForm({ ...loginForm, role: e.target.value })}
-                    className="form-input"
-                    style={{ background: 'white' }}
-                  >
-                    <option value="student">Student (மாணவர்)</option>
-                    <option value="admin">Instructor / Admin (ஆசிரியர்)</option>
-                  </select>
+                  {/* Phone No. * */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>PHONE NO. *</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <select
+                        value={loginForm.phoneCountry}
+                        onChange={(e) => setLoginForm({ ...loginForm, phoneCountry: e.target.value })}
+                        className="form-input"
+                        style={{ width: '100px', background: 'white' }}
+                      >
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+65">🇸🇬 +65</option>
+                        <option value="+60">🇲🇾 +60</option>
+                        <option value="+94">🇱🇰 +94</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+61">🇦🇺 +61</option>
+                      </select>
+                      <input
+                        type="tel"
+                        value={loginForm.phone}
+                        onChange={(e) => setLoginForm({ ...loginForm, phone: e.target.value })}
+                        required
+                        className="form-input"
+                        style={{ flex: 1 }}
+                        placeholder="Enter your phone number"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Date of Birth * */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>DATE OF BIRTH *</label>
+                    <input
+                      type="date"
+                      value={loginForm.dob}
+                      onChange={(e) => setLoginForm({ ...loginForm, dob: e.target.value })}
+                      required
+                      className="form-input"
+                    />
+                  </div>
+
+                  {/* Gender * */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>GENDER *</label>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      {['Male', 'Female', 'Others'].map(g => (
+                        <button
+                          key={g}
+                          type="button"
+                          onClick={() => setLoginForm({ ...loginForm, gender: g })}
+                          style={{
+                            flex: 1,
+                            padding: '10px 16px',
+                            borderRadius: '20px',
+                            border: loginForm.gender === g ? '2px solid var(--accent-primary)' : '1px solid #cbd5e1',
+                            background: loginForm.gender === g ? 'var(--accent-primary-glow)' : 'white',
+                            color: loginForm.gender === g ? 'var(--accent-primary)' : 'var(--text-primary)',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          {g}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Portal Role Selection */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>PORTAL ROLE</label>
+                    <select
+                      value={loginForm.role}
+                      onChange={(e) => setLoginForm({ ...loginForm, role: e.target.value })}
+                      className="form-input"
+                      style={{ background: 'white' }}
+                    >
+                      <option value="student">Student (மாணவர்)</option>
+                      <option value="admin">Instructor / Admin (ஆசிரியர்)</option>
+                    </select>
+                  </div>
                 </div>
 
+                {/* Right Column */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Learner Photo * */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>LEARNER PHOTO *</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{
+                        flex: 1,
+                        border: '2px dashed #cbd5e1',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        textAlign: 'center',
+                        background: '#f8fafc',
+                        cursor: 'pointer',
+                        position: 'relative'
+                      }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 3 * 1024 * 1024) {
+                                alert("File size must be within 3MB");
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                setLoginForm({ ...loginForm, photo: event.target.result });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: 0, left: 0, width: '100%', height: '100%',
+                            opacity: 0, cursor: 'pointer'
+                          }}
+                        />
+                        <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '4px' }}>☁️</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--accent-primary)' }}>Choose a file</span>
+                        <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>The file size should be within 3MB</p>
+                      </div>
+                      <div style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '50%',
+                        border: '1px solid #cbd5e1',
+                        overflow: 'hidden',
+                        background: '#f1f5f9',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        {loginForm.photo ? (
+                          <img src={loginForm.photo} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <span style={{ fontSize: '2rem', color: '#94a3b8' }}>👤</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Address * */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>ADDRESS *</label>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{loginForm.address.length} / 256</span>
+                    </div>
+                    <textarea
+                      value={loginForm.address}
+                      onChange={(e) => setLoginForm({ ...loginForm, address: e.target.value.slice(0, 256) })}
+                      required
+                      className="form-input"
+                      rows={3}
+                      placeholder="Enter your address"
+                      style={{ resize: 'none', fontFamily: 'inherit' }}
+                    />
+                  </div>
+
+                  {/* Country * & State * */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>COUNTRY *</label>
+                      <select
+                        value={loginForm.country}
+                        onChange={(e) => setLoginForm({ ...loginForm, country: e.target.value })}
+                        required
+                        className="form-input"
+                        style={{ background: 'white' }}
+                      >
+                        <option value="Select">Select</option>
+                        <option value="India">India</option>
+                        <option value="Singapore">Singapore</option>
+                        <option value="Malaysia">Malaysia</option>
+                        <option value="Sri Lanka">Sri Lanka</option>
+                        <option value="United States">United States</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Australia">Australia</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>STATE *</label>
+                      <input
+                        type="text"
+                        value={loginForm.state}
+                        onChange={(e) => setLoginForm({ ...loginForm, state: e.target.value })}
+                        required
+                        className="form-input"
+                        placeholder="Enter your state name"
+                      />
+                    </div>
+                  </div>
+
+                  {/* City & Postal Code * */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>CITY</label>
+                      <input
+                        type="text"
+                        value={loginForm.city}
+                        onChange={(e) => setLoginForm({ ...loginForm, city: e.target.value })}
+                        className="form-input"
+                        placeholder="Enter your city name"
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>POSTAL CODE *</label>
+                      <input
+                        type="text"
+                        value={loginForm.postalCode}
+                        onChange={(e) => setLoginForm({ ...loginForm, postalCode: e.target.value })}
+                        required
+                        className="form-input"
+                        placeholder="Enter your postal code"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Branch * & Course * */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>BRANCH *</label>
+                      <select
+                        value={loginForm.branch}
+                        onChange={(e) => setLoginForm({ ...loginForm, branch: e.target.value })}
+                        required
+                        className="form-input"
+                        style={{ background: 'white' }}
+                      >
+                        <option value="Select">Select</option>
+                        <option value="Chennai">Chennai</option>
+                        <option value="Coimbatore">Coimbatore</option>
+                        <option value="Madurai">Madurai</option>
+                        <option value="Trichy">Trichy</option>
+                        <option value="Jaffna">Jaffna</option>
+                        <option value="Singapore Central">Singapore Central</option>
+                        <option value="Kuala Lumpur">Kuala Lumpur</option>
+                        <option value="Virtual Campus">Virtual Campus</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>COURSE *</label>
+                      <select
+                        value={loginForm.course}
+                        onChange={(e) => setLoginForm({ ...loginForm, course: e.target.value })}
+                        required
+                        className="form-input"
+                        style={{ background: 'white' }}
+                      >
+                        <option value="Select">Select</option>
+                        <option value="Certificate in Basic Tamil">Certificate in Basic Tamil (அடிப்படைத் தமிழ்)</option>
+                        <option value="Diploma in Tamil Language">Diploma in Tamil Language</option>
+                        <option value="Tamil Literature and Grammar">Tamil Literature and Grammar</option>
+                        <option value="Spoken Tamil Academy">Spoken Tamil Academy</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // Login Mode Forms
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>USERNAME</label>
+                  <input
+                    type="text"
+                    value={loginForm.username}
+                    onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                    required
+                    className="form-input"
+                    placeholder="Enter username..."
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>SECURITY PIN (PASSWORD)</label>
+                  <input
+                    type="password"
+                    value={loginForm.pin}
+                    onChange={(e) => setLoginForm({ ...loginForm, pin: e.target.value })}
+                    required
+                    className="form-input"
+                    placeholder="Enter password..."
+                  />
+                </div>
+              </>
+            )}
+
+            {isRegisterMode && (
+              <>
                 {loginForm.role === 'student' ? (
                   <div style={{ fontSize: '0.8rem', padding: '12px', background: 'rgba(99, 102, 241, 0.05)', border: '1px dashed var(--accent-primary)', borderRadius: '4px', color: 'var(--text-primary)', lineHeight: 1.4 }}>
                     📝 <strong>Tamil Level Placement:</strong> To personalize your experience, you will complete a 10-question placement quiz right after registration to dynamically determine your learning level.
