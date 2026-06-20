@@ -169,6 +169,7 @@ export default function App() {
   const [aiPlacementLoading, setAiPlacementLoading] = useState(false);
   
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [showPlacementNotice, setShowPlacementNotice] = useState(false);
   const [loginError, setLoginError] = useState(null);
 
   // User Stats & Activity Tracker
@@ -556,7 +557,7 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
               A quiet and clean digital space built to practice Tamil conversations with pronunciation feedback, correct spelling mistakes, and access structured TVA lessons.
             </p>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => { setIsRegisterMode(true); setLoginError(null); setShowLogin(true); }} className="btn-primary" style={{ padding: '14px 28px', fontSize: '0.95rem' }}>
+              <button onClick={() => { setIsRegisterMode(true); setLoginError(null); setShowLogin(true); setShowPlacementNotice(true); }} className="btn-primary" style={{ padding: '14px 28px', fontSize: '0.95rem' }}>
                 Create Study Card <ArrowRight size={16} />
               </button>
             </div>
@@ -1014,7 +1015,7 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
               ) : (
                 <button
                   type="button"
-                  onClick={() => { setIsRegisterMode(true); setLoginError(null); }}
+                  onClick={() => { setIsRegisterMode(true); setLoginError(null); setShowPlacementNotice(true); }}
                   style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
                 >
                   Need a student card? Create new profile
@@ -1023,6 +1024,80 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
             </div>
           </div>
         </form>
+
+        {showPlacementNotice && (
+          <div className="animate-fade-in" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(15, 23, 42, 0.4)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}>
+            <div className="glass-panel animate-scale-in" style={{
+              background: '#ffffff',
+              borderRadius: '8px',
+              padding: '32px',
+              maxWidth: '480px',
+              width: '100%',
+              textAlign: 'center',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              border: '1px solid var(--panel-border)',
+              position: 'relative'
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'rgba(99, 102, 241, 0.1)',
+                color: 'var(--accent-primary)',
+                marginBottom: '20px'
+              }}>
+                <GraduationCap size={32} />
+              </div>
+
+              <h2 style={{
+                fontSize: '1.4rem',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+                marginBottom: '12px'
+              }}>
+                Tamil Level Placement
+              </h2>
+
+              <p style={{
+                fontSize: '0.9rem',
+                color: 'var(--text-muted)',
+                lineHeight: 1.5,
+                marginBottom: '24px'
+              }}>
+                To personalize your experience, you will complete a 10-question placement quiz right after registration to dynamically determine your learning level.
+              </p>
+
+              <button
+                onClick={() => setShowPlacementNotice(false)}
+                className="btn-primary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'center',
+                  padding: '12px 24px',
+                  fontSize: '0.95rem'
+                }}
+              >
+                Got it, let's go!
+              </button>
+            </div>
+          </div>
+        )}
 
         <style>{`
           .login-card {
