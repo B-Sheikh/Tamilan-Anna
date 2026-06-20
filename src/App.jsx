@@ -398,27 +398,11 @@ export default function App() {
     if (score >= 8) allotted = 'advanced';
     else if (score >= 5) allotted = 'intermediate';
 
-    // Check if Gemini key is available for AI analysis report
-    if (!apiKey || !isValidGeminiKey(apiKey)) {
-      let localReport = "";
-      if (allotted === 'advanced') {
-        localReport = "Fantastic! You possess a robust command of advanced Tamil vocabulary, grammar rules, and syntax structure. Ready to practice speaking fluently!";
-      } else if (allotted === 'intermediate') {
-        localReport = "Great job! You have solid intermediate skills and understand general sentence structure. Ready to focus on fluid conversations.";
-      } else {
-        localReport = "Welcome! You are starting your journey with core Tamil letters, sounds, and basic greetings. We will build your vocabulary step-by-step.";
-      }
-      setPlacementEvaluation({
-        score,
-        allottedLevel: allotted,
-        finalLevel: allotted,
-        aiReport: localReport
-      });
-      setAiPlacementLoading(false);
-      return;
-    }
+    let report = `Placement evaluated. You scored ${score}/10. Allotted level: ${allotted.toUpperCase()}.`;
 
-    const prompt = `A student just completed an onboarding Tamil placement quiz.
+    // Check if Gemini key is available for AI analysis report
+    if (apiKey && isValidGeminiKey(apiKey)) {
+      const prompt = `A student just completed an onboarding Tamil placement quiz.
 Score: ${score}/10.
 Answers details:
 ${placementQuestions.map((q, idx) => {
@@ -429,48 +413,43 @@ User answered: "${q.options[answers[idx]] || 'No answer'}" (Correct answer: "${q
 
 Analyze their performance and write a concise, encouraging 2-sentence summary in English about their Tamil proficiency level and what they should focus on. Keep it friendly and motivational.`;
 
-    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
-    let report = `Placement evaluated. You scored ${score}/10. Allotted level: ${allotted.toUpperCase()}.`;
-    let success = false;
-
-    for (const model of modelsToTry) {
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
+      for (const model of modelsToTry) {
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            report = data.candidates?.[0]?.content?.parts?.[0]?.text || report;
+            break;
           }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          report = data.candidates?.[0]?.content?.parts?.[0]?.text || report;
-          success = true;
-          break;
+        } catch (err) {
+          console.warn(`Placement AI report failed with model ${model}:`, err.message);
         }
-      } catch (err) {
-        console.warn(`Placement AI report failed with model ${model}:`, err.message);
+      }
+    } else {
+      if (allotted === 'advanced') {
+        report = "Fantastic! You possess a robust command of advanced Tamil vocabulary, grammar rules, and syntax structure. Ready to practice speaking fluently!";
+      } else if (allotted === 'intermediate') {
+        report = "Great job! You have solid intermediate skills and understand general sentence structure. Ready to focus on fluid conversations.";
+      } else {
+        report = "Welcome! You are starting your journey with core Tamil letters, sounds, and basic greetings. We will build your vocabulary step-by-step.";
       }
     }
 
-    setPlacementEvaluation({
-      score,
-      allottedLevel: allotted,
-      finalLevel: allotted,
-      aiReport: report
-    });
-    setAiPlacementLoading(false);
-  };
-
-  const handleFinalizePlacement = () => {
-    if (!placementEvaluation) return;
+    // Automatically create the student profile
     const users = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
     const newUser = {
       username: loginForm.username.trim().toLowerCase(),
       pin: loginForm.pin,
       name: loginForm.name.trim(),
-      level: placementEvaluation.finalLevel,
+      level: allotted, // Automatically save the determined level
       role: loginForm.role,
       email: loginForm.email.trim(),
       phoneCountry: loginForm.phoneCountry,
@@ -484,17 +463,28 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
       city: loginForm.city.trim(),
       postalCode: loginForm.postalCode.trim(),
       branch: loginForm.branch,
-      course: loginForm.course
+      course: loginForm.course,
+      placementScore: score,
+      placementReport: report
     };
 
     const updated = [...users, newUser];
     localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
     localStorage.setItem('tamilan_current_user', JSON.stringify(newUser));
+    
+    // Log in user and clean up states to head to dashboard
     setUser(newUser);
     setIsRegisterMode(false);
     setPlacementQuizActive(false);
     setPlacementEvaluation(null);
     setLoginForm(initialLoginFormState);
+    setAiPlacementLoading(false);
+  };
+
+  const handleFinalizePlacement = () => {
+    // Retained for fallback compatibility
+    setPlacementQuizActive(false);
+    setPlacementEvaluation(null);
   };
 
   const handleLogout = () => {
