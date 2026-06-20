@@ -3,8 +3,22 @@ import { GraduationCap, Volume2, Sparkles, BookOpen, Layers, CheckCircle2, Alert
 
 let activeAudio = null;
 
-export default function TamilBasics() {
-  const [activeSubTab, setActiveSubTab] = useState('vowels');
+export default function TamilBasics({ user, onLogActivity }) {
+  const currentLevel = user?.level || 'beginner';
+  
+  const [activeSubTab, setActiveSubTab] = useState(
+    currentLevel === 'advanced' ? 'sentences' : currentLevel === 'intermediate' ? 'words' : 'vowels'
+  );
+
+  // Intermediate Word States
+  const [selectedWordIndex, setSelectedWordIndex] = useState(0);
+  const [wordBuildProgress, setWordBuildProgress] = useState([]); // letters clicked so far
+  const [wordQuizFeedback, setWordQuizFeedback] = useState(null);
+  
+  // Advanced Sentence States
+  const [selectedSentenceIndex, setSelectedSentenceIndex] = useState(0);
+  const [sentenceBuildProgress, setSentenceBuildProgress] = useState([]); // words clicked so far
+  const [sentenceQuizFeedback, setSentenceQuizFeedback] = useState(null);
 
   // Vowels Data
   const vowels = [
@@ -43,6 +57,131 @@ export default function TamilBasics() {
     { char: 'ள்', sound: 'l', pronunciation: 'retroflex l (tongue curled back)', example: 'வாள் (Vaal - Sword)' },
     { char: 'ற்', sound: 'tr / r', pronunciation: 'hard tr or r', example: 'பறவை (Paravai - Bird)' },
     { char: 'ன்', sound: 'n', pronunciation: 'alveolar n', example: 'மீன் (Meen - Fish)' }
+  ];
+
+  const intermediateWords = [
+    {
+      word: 'அம்மா',
+      translit: 'Amma',
+      meaning: 'Mother',
+      visual: '👩‍👦',
+      breakdown: ['அ', 'ம்', 'மா'],
+      lettersPool: ['அ', 'மா', 'ம்', 'இ', 'க்']
+    },
+    {
+      word: 'தந்தை',
+      translit: 'Thandhai',
+      meaning: 'Father',
+      visual: '👨‍👦',
+      breakdown: ['த', 'ந்', 'தை'],
+      lettersPool: ['ந்', 'த', 'தை', 'ப்', 'ம']
+    },
+    {
+      word: 'மரம்',
+      translit: 'Maram',
+      meaning: 'Tree',
+      visual: '🌳',
+      breakdown: ['ம', 'ர', 'ம்'],
+      lettersPool: ['ர', 'ம', 'ம்', 'க்', 'ப்']
+    },
+    {
+      word: 'ஆடு',
+      translit: 'Aadu',
+      meaning: 'Goat',
+      visual: '🐐',
+      breakdown: ['ஆ', 'டு'],
+      lettersPool: ['டு', 'ஆ', 'அ', 'ம்']
+    },
+    {
+      word: 'நண்டு',
+      translit: 'Nandu',
+      meaning: 'Crab',
+      visual: '🦀',
+      breakdown: ['ந', 'ண்', 'டு'],
+      lettersPool: ['ண்', 'டு', 'ந', 'ம', 'க்']
+    },
+    {
+      word: 'சிங்கம்',
+      translit: 'Singam',
+      meaning: 'Lion',
+      visual: '🦁',
+      breakdown: ['சி', 'ங்', 'க', 'ம்'],
+      lettersPool: ['சி', 'க', 'ம்', 'ங்', 'ப்', 'ம']
+    },
+    {
+      word: 'பழம்',
+      translit: 'Pazham',
+      meaning: 'Fruit / Banana',
+      visual: '🍎',
+      breakdown: ['ப', 'ழ', 'ம்'],
+      lettersPool: ['ப', 'ம்', 'ழ', 'ர', 'க்']
+    },
+    {
+      word: 'தவளை',
+      translit: 'Thavalai',
+      meaning: 'Frog',
+      visual: '🐸',
+      breakdown: ['த', 'வ', 'ளை'],
+      lettersPool: ['வ', 'த', 'ளை', 'ம்', 'ப்']
+    }
+  ];
+
+  const advancedSentences = [
+    {
+      sentence: 'நான் தமிழ் படிக்கிறேன்',
+      translit: 'Naan Thamizh padikkiren',
+      meaning: 'I am studying Tamil',
+      breakdown: [
+        { word: 'நான்', meaning: 'I' },
+        { word: 'தமிழ்', meaning: 'Tamil' },
+        { word: 'படிக்கிறேன்', meaning: 'study' }
+      ],
+      wordsPool: ['தமிழ்', 'படிக்கிறேன்', 'நான்', 'அம்மா']
+    },
+    {
+      sentence: 'இது ஒரு புத்தகம்',
+      translit: 'Idhu oru puthagam',
+      meaning: 'This is a book',
+      breakdown: [
+        { word: 'இது', meaning: 'This' },
+        { word: 'ஒரு', meaning: 'a' },
+        { word: 'புத்தகம்', meaning: 'book' }
+      ],
+      wordsPool: ['ஒரு', 'இது', 'மரம்', 'புத்தகம்']
+    },
+    {
+      sentence: 'அம்மா சாப்பாடு தருகிறார்',
+      translit: 'Amma saappaadu tharugiraar',
+      meaning: 'Mother is giving food',
+      breakdown: [
+        { word: 'அம்மா', meaning: 'Mother' },
+        { word: 'சாப்பாடு', meaning: 'food' },
+        { word: 'தருகிறார்', meaning: 'gives' }
+      ],
+      wordsPool: ['தருகிறார்', 'அம்மா', 'தந்தை', 'சாப்பாடு']
+    },
+    {
+      sentence: 'எனக்கு தாகமாக இருக்கிறது',
+      translit: 'Enakku thaagamaaga irukkiradhu',
+      meaning: 'I am thirsty',
+      breakdown: [
+        { word: 'எனக்கு', meaning: 'To me' },
+        { word: 'தாகமாக', meaning: 'thirsty' },
+        { word: 'இருக்கிறது', meaning: 'is' }
+      ],
+      wordsPool: ['தாகமாக', 'இருக்கிறது', 'எனக்கு', 'பழம்']
+    },
+    {
+      sentence: 'வானிலை நன்றாக உள்ளது',
+      translit: 'Vaanilai nandraga ulladhu',
+      meaning: 'The weather is good',
+      breakdown: [
+        { word: 'வானிலை', meaning: 'Weather' },
+        { word: 'நன்றாக', meaning: 'good' },
+        { word: 'உள்ளது', meaning: 'is' }
+      ],
+      wordsPool: ['நன்றாக', 'உள்ளது', 'வானிலை', 'சிங்கம்']
+    }
   ];
 
   // Letter builder state
@@ -92,7 +231,9 @@ export default function TamilBasics() {
 
     // 2. Draw faint skeleton character to trace
     ctx.fillStyle = '#f1f5f9'; // extremely light gray
-    ctx.font = '220px "Outfit", "Noto Sans Tamil", sans-serif';
+    const len = tracingLetter.length;
+    const fontSize = len <= 1 ? '220px' : len <= 4 ? '110px' : len <= 8 ? '65px' : '36px';
+    ctx.font = `${fontSize} "Outfit", "Noto Sans Tamil", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(tracingLetter, canvas.width / 2, canvas.height / 2);
@@ -172,7 +313,9 @@ export default function TamilBasics() {
 
     // 2. Faint guide character
     ctx.fillStyle = '#f1f5f9';
-    ctx.font = '220px "Outfit", "Noto Sans Tamil", sans-serif';
+    const len = tracingLetter.length;
+    const fontSize = len <= 1 ? '220px' : len <= 4 ? '110px' : len <= 8 ? '65px' : '36px';
+    ctx.font = `${fontSize} "Outfit", "Noto Sans Tamil", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(tracingLetter, canvas.width / 2, canvas.height / 2);
@@ -226,7 +369,9 @@ export default function TamilBasics() {
     targetCanvas.height = checkH;
     const tCtx = targetCanvas.getContext('2d');
     tCtx.fillStyle = 'black';
-    tCtx.font = '60px "Outfit", "Noto Sans Tamil", sans-serif';
+    const len = tracingLetter.length;
+    const offscreenSize = len <= 1 ? '60px' : len <= 4 ? '30px' : len <= 8 ? '18px' : '10px';
+    tCtx.font = `${offscreenSize} "Outfit", "Noto Sans Tamil", sans-serif`;
     tCtx.textAlign = 'center';
     tCtx.textBaseline = 'middle';
     tCtx.fillText(tracingLetter, checkW / 2, checkH / 2);
@@ -580,20 +725,35 @@ export default function TamilBasics() {
       </div>
 
       {/* Internal Subtabs */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--panel-border)', paddingBottom: '12px', marginBottom: '20px' }}>
-        {[
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--panel-border)', paddingBottom: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        {(currentLevel === 'advanced' ? [
+          { id: 'sentences', label: 'Simple Sentences (வாக்கியங்கள்)', icon: BookOpen },
+          { id: 'drawing', label: 'Sentence Tracing & Canvas', icon: PenTool },
+          { id: 'quiz', label: 'Sentence Quiz', icon: CheckCircle2 }
+        ] : currentLevel === 'intermediate' ? [
+          { id: 'words', label: 'Word Cards & Visuals', icon: BookOpen },
+          { id: 'word_quiz', label: 'Word Builder Game', icon: Sparkles },
+          { id: 'drawing', label: 'Word Tracing & Sandbox', icon: PenTool },
+          { id: 'game', label: 'Memory Game (விளையாட்டு)', icon: Gamepad2 }
+        ] : [
           { id: 'vowels', label: '12 Vowels (உயிரெழுத்துக்கள்)', icon: BookOpen },
           { id: 'consonants', label: '18 Consonants (மெய்யெழுத்துக்கள்)', icon: Layers },
           { id: 'builder', label: 'Compound Letter Builder', icon: Sparkles },
           { id: 'drawing', label: 'Letter Tracing & Draw (வரைதல்)', icon: PenTool },
           { id: 'game', label: 'Memory Game (விளையாட்டு)', icon: Gamepad2 },
           { id: 'quiz', label: 'Basics Quiz', icon: CheckCircle2 }
-        ].map(tab => {
+        ]).map(tab => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveSubTab(tab.id)}
+              onClick={() => {
+                setActiveSubTab(tab.id);
+                // Set default tracing text on tab change if drawing is selected
+                if (tab.id === 'drawing') {
+                  setTracingLetter(currentLevel === 'advanced' ? 'இது ஒரு புத்தகம்' : currentLevel === 'intermediate' ? 'அம்மா' : 'அ');
+                }
+              }}
               className="module-action-btn"
               style={{
                 display: 'flex',
@@ -873,15 +1033,17 @@ export default function TamilBasics() {
         <div className="glass-panel animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', background: 'white', padding: '24px', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
           {/* Controls */}
           <div>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.15rem', color: 'var(--text-primary)', fontWeight: 600 }}>Letter Tracing Sandbox</h3>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.15rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+              {currentLevel === 'advanced' ? 'Sentence Tracing Sandbox' : currentLevel === 'intermediate' ? 'Word Tracing Sandbox' : 'Letter Tracing Sandbox'}
+            </h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '20px', lineHeight: 1.4 }}>
-              Select a Tamil letter from the dropdown. Follow the guide lines and trace inside the faint gray character layout with your cursor or finger:
+              {currentLevel === 'advanced' ? 'Select a Tamil sentence from the dropdown. Trace inside the faint guide layout to practice syntax:' : currentLevel === 'intermediate' ? 'Select a Tamil word from the dropdown. Trace inside the faint guide layout to practice handwriting:' : 'Select a Tamil letter from the dropdown. Trace inside the faint guide layout to practice stroke order:'}
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                  Select Character
+                  {currentLevel === 'advanced' ? 'Select Sentence' : currentLevel === 'intermediate' ? 'Select Word' : 'Select Character'}
                 </label>
                 <select 
                   value={tracingLetter} 
@@ -889,7 +1051,7 @@ export default function TamilBasics() {
                   className="form-input"
                   style={{ width: '100%', padding: '10px', fontSize: '0.95rem', borderRadius: '4px', border: '1px solid #cbd5e1' }}
                 >
-                  {allLetters.map((l, i) => (
+                  {(currentLevel === 'advanced' ? advancedSentences.map(s => s.sentence) : currentLevel === 'intermediate' ? intermediateWords.map(w => w.word) : allLetters).map((l, i) => (
                     <option key={i} value={l}>{l}</option>
                   ))}
                 </select>
@@ -1128,6 +1290,414 @@ export default function TamilBasics() {
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Intermediate Words Workspace */}
+      {activeSubTab === 'words' && (
+        <div className="glass-panel animate-fade-in" style={{ background: 'white', padding: '24px', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>Tamil Word Cards (வார்த்தைகள்)</h3>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              Explore intermediate words. Click a card to read, hear pronunciation, and visualize the vocabulary details:
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+            {intermediateWords.map((w, idx) => (
+              <div
+                key={idx}
+                className="glass-panel"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  background: 'white',
+                  border: selectedWordIndex === idx ? '2px solid var(--accent-primary)' : '1px solid var(--panel-border)',
+                  borderRadius: '8px',
+                  padding: '20px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                  transition: 'all 0.2s',
+                  cursor: 'pointer',
+                  transform: selectedWordIndex === idx ? 'translateY(-2px)' : 'none'
+                }}
+                onClick={() => {
+                  setSelectedWordIndex(idx);
+                  setWordBuildProgress([]);
+                  setWordQuizFeedback(null);
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '3rem' }}>{w.visual}</div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      speakLetter(w.word);
+                    }}
+                    className="logo-glow"
+                    style={{
+                      border: 'none',
+                      background: 'var(--accent-primary-glow)',
+                      color: 'var(--accent-primary)',
+                      padding: '8px',
+                      borderRadius: '50%',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Volume2 size={16} />
+                  </button>
+                </div>
+                <div style={{ marginBottom: '12px' }}>
+                  <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-primary)', display: 'block' }}>{w.word}</span>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--accent-secondary)', fontWeight: 600 }}>{w.translit}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', paddingTop: '12px', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Meaning:</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{w.meaning}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Spelling:</span>
+                  <span style={{ fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: '2px' }}>
+                    {w.breakdown.join(' + ')}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Word Builder Quiz Workspace */}
+      {activeSubTab === 'word_quiz' && (
+        <div className="glass-panel animate-fade-in" style={{ background: 'white', padding: '24px', border: '1px solid var(--panel-border)', borderRadius: '4px', maxWidth: '600px', margin: '0 auto' }}>
+          {(() => {
+            const currentWordObj = intermediateWords[selectedWordIndex];
+            const isCompleted = wordBuildProgress.length === currentWordObj.breakdown.length;
+            const formedWord = wordBuildProgress.join('');
+            const isCorrect = formedWord === currentWordObj.word;
+
+            const handleLetterClick = (letter) => {
+              if (wordBuildProgress.length < currentWordObj.breakdown.length) {
+                const nextProgress = [...wordBuildProgress, letter];
+                setWordBuildProgress(nextProgress);
+
+                if (nextProgress.length === currentWordObj.breakdown.length) {
+                  const checkVal = nextProgress.join('');
+                  if (checkVal === currentWordObj.word) {
+                    setWordQuizFeedback('correct');
+                    speakLetter(currentWordObj.word);
+                  } else {
+                    setWordQuizFeedback('wrong');
+                  }
+                }
+              }
+            };
+
+            const resetWordQuiz = () => {
+              setWordBuildProgress([]);
+              setWordQuizFeedback(null);
+            };
+
+            const nextWordQuiz = () => {
+              setSelectedWordIndex((selectedWordIndex + 1) % intermediateWords.length);
+              setWordBuildProgress([]);
+              setWordQuizFeedback(null);
+            };
+
+            return (
+              <div>
+                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                  <span style={{ fontSize: '4.5rem', display: 'block', marginBottom: '8px' }}>{currentWordObj.visual}</span>
+                  <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Build Word: <span style={{ color: 'var(--accent-primary)' }}>{currentWordObj.meaning.toUpperCase()} ({currentWordObj.translit})</span>
+                  </h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: 0 }}>
+                    Click the scrambled letters below in correct order to spell the Tamil word!
+                  </p>
+                </div>
+
+                {/* Slots View */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '24px' }}>
+                  {currentWordObj.breakdown.map((_, idx) => {
+                    const filled = wordBuildProgress[idx];
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          width: '56px',
+                          height: '56px',
+                          border: filled ? '2px solid var(--accent-primary)' : '2px dashed #cbd5e1',
+                          borderRadius: '8px',
+                          background: filled ? 'var(--accent-primary-glow)' : 'transparent',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1.5rem',
+                          fontWeight: 'bold',
+                          color: 'var(--accent-primary)',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        {filled || ''}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Feedback Dialog */}
+                {wordQuizFeedback && (
+                  <div
+                    style={{
+                      padding: '16px',
+                      borderRadius: '6px',
+                      textAlign: 'center',
+                      marginBottom: '20px',
+                      background: wordQuizFeedback === 'correct' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+                      border: `1px solid ${wordQuizFeedback === 'correct' ? 'var(--success)' : 'var(--error)'}`,
+                      color: wordQuizFeedback === 'correct' ? 'var(--success)' : 'var(--error)',
+                      fontSize: '0.9rem',
+                      fontWeight: 600
+                    }}
+                  >
+                    {wordQuizFeedback === 'correct' ? (
+                      <div>
+                        <span>✨ Excellent! Correctly spelled: {currentWordObj.word} ({currentWordObj.translit})</span>
+                      </div>
+                    ) : (
+                      <div>
+                        <span>❌ Incorrect spelling. Give it another try!</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Pool of letter choices */}
+                {!wordQuizFeedback && (
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
+                    {currentWordObj.lettersPool.map((letter, lIdx) => {
+                      const usedCount = wordBuildProgress.filter(x => x === letter).length;
+                      const maxCount = currentWordObj.lettersPool.filter(x => x === letter).length;
+                      const disabled = usedCount >= maxCount;
+
+                      return (
+                        <button
+                          key={lIdx}
+                          onClick={() => handleLetterClick(letter)}
+                          disabled={disabled}
+                          style={{
+                            padding: '10px 20px',
+                            fontSize: '1.25rem',
+                            fontWeight: 'bold',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '6px',
+                            background: disabled ? '#f1f5f9' : 'white',
+                            cursor: disabled ? 'not-allowed' : 'pointer',
+                            color: disabled ? '#94a3b8' : 'var(--text-primary)',
+                            boxShadow: disabled ? 'none' : '0 2px 4px rgba(0,0,0,0.05)',
+                            transition: 'all 0.1s'
+                          }}
+                        >
+                          {letter}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Navigation actions */}
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button onClick={resetWordQuiz} className="btn-secondary" style={{ flex: 1, justifyContent: 'center' }}>
+                    Reset Builder
+                  </button>
+                  <button onClick={nextWordQuiz} className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                    Next Word
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Advanced Sentences & Scrambler Workspace */}
+      {activeSubTab === 'sentences' && (
+        <div className="glass-panel animate-fade-in" style={{ background: 'white', padding: '24px', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>Advanced Sentence Clinic (வாக்கியங்கள்)</h3>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              Practice structuring simple Tamil sentences. Study word structures and play the Sentence Scrambler game to build fluency:
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
+            {/* Left side: Sentences selector & Breakdown */}
+            <div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                {advancedSentences.map((s, idx) => (
+                  <div
+                    key={idx}
+                    className="glass-panel"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: 'white',
+                      border: selectedSentenceIndex === idx ? '2px solid var(--accent-primary)' : '1px solid var(--panel-border)',
+                      borderRadius: '6px',
+                      padding: '16px 20px',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.01)',
+                      transition: 'all 0.15s'
+                    }}
+                    onClick={() => {
+                      setSelectedSentenceIndex(idx);
+                      setSentenceBuildProgress([]);
+                      setSentenceQuizFeedback(null);
+                    }}
+                  >
+                    <div>
+                      <span style={{ display: 'block', fontSize: '1.15rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{s.sentence}</span>
+                      <span style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>{s.translit}</span>
+                      <span style={{ display: 'block', fontSize: '0.82rem', color: 'var(--accent-secondary)', fontWeight: 600, marginTop: '2px' }}>{s.meaning}</span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        speakLetter(s.sentence);
+                      }}
+                      className="logo-glow"
+                      style={{
+                        border: 'none',
+                        background: 'var(--accent-primary-glow)',
+                        color: 'var(--accent-primary)',
+                        padding: '8px',
+                        borderRadius: '50%',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Volume2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Selected breakdown structure details */}
+              <div style={{ background: '#f8fafc', padding: '20px', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Structure Analysis</h4>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  {advancedSentences[selectedSentenceIndex].breakdown.map((item, idx) => (
+                    <div key={idx} style={{ background: 'white', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '4px', textAlign: 'center', minWidth: '90px' }}>
+                      <span style={{ display: 'block', fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{item.word}</span>
+                      <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.meaning}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right side: Interactive Scrambler */}
+            <div className="glass-panel" style={{ background: '#f8fafc', padding: '24px', border: '1px solid var(--panel-border)', borderRadius: '6px' }}>
+              {(() => {
+                const targetObj = advancedSentences[selectedSentenceIndex];
+                const cleanTargetParts = targetObj.sentence.split(' ');
+                const isCorrect = sentenceBuildProgress.join(' ') === targetObj.sentence;
+                const isFinished = sentenceBuildProgress.length === cleanTargetParts.length;
+
+                const handleWordClick = (word) => {
+                  if (sentenceBuildProgress.length < cleanTargetParts.length) {
+                    const nextProgress = [...sentenceBuildProgress, word];
+                    setSentenceBuildProgress(nextProgress);
+
+                    if (nextProgress.length === cleanTargetParts.length) {
+                      const formed = nextProgress.join(' ');
+                      if (formed === targetObj.sentence) {
+                        setSentenceQuizFeedback('correct');
+                        speakLetter(targetObj.sentence);
+                      } else {
+                        setSentenceQuizFeedback('wrong');
+                      }
+                    }
+                  }
+                };
+
+                const resetScrambler = () => {
+                  setSentenceBuildProgress([]);
+                  setSentenceQuizFeedback(null);
+                };
+
+                return (
+                  <div>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 700, textAlign: 'center' }}>Sentence Scrambler</h4>
+                    <p style={{ margin: '0 0 20px 0', fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                      Arrange the words in correct grammatical sequence to mean: <strong>"{targetObj.meaning}"</strong>
+                    </p>
+
+                    {/* Build Box */}
+                    <div style={{ minHeight: '60px', padding: '10px', background: 'white', border: '1px solid #cbd5e1', borderRadius: '4px', display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '24px' }}>
+                      {sentenceBuildProgress.length === 0 && <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Select words below...</span>}
+                      {sentenceBuildProgress.map((word, idx) => (
+                        <div key={idx} style={{ background: 'var(--accent-primary-glow)', padding: '6px 12px', border: '1px solid var(--accent-primary)', borderRadius: '4px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                          {word}
+                        </div>
+                      ))}
+                    </div>
+
+                    {sentenceQuizFeedback && (
+                      <div
+                        style={{
+                          padding: '12px',
+                          borderRadius: '4px',
+                          textAlign: 'center',
+                          marginBottom: '20px',
+                          background: sentenceQuizFeedback === 'correct' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+                          border: `1px solid ${sentenceQuizFeedback === 'correct' ? 'var(--success)' : 'var(--error)'}`,
+                          color: sentenceQuizFeedback === 'correct' ? 'var(--success)' : 'var(--error)',
+                          fontSize: '0.85rem',
+                          fontWeight: 600
+                        }}
+                      >
+                        {sentenceQuizFeedback === 'correct' ? '✨ Perfect! Sentence formed correctly!' : '❌ Incorrect syntax sequence. Reset and try again.'}
+                      </div>
+                    )}
+
+                    {!sentenceQuizFeedback && (
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '24px' }}>
+                        {targetObj.wordsPool.map((word, wIdx) => {
+                          const clickCount = sentenceBuildProgress.filter(x => x === word).length;
+                          const poolCount = targetObj.wordsPool.filter(x => x === word).length;
+                          const clicked = clickCount >= poolCount;
+
+                          return (
+                            <button
+                              key={wIdx}
+                              onClick={() => handleWordClick(word)}
+                              disabled={clicked}
+                              style={{
+                                padding: '8px 16px',
+                                background: clicked ? '#cbd5e1' : 'white',
+                                color: clicked ? '#94a3b8' : 'var(--text-primary)',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: '4px',
+                                fontSize: '0.88rem',
+                                fontWeight: 'bold',
+                                cursor: clicked ? 'not-allowed' : 'pointer',
+                                transition: 'all 0.1s'
+                              }}
+                            >
+                              {word}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <button onClick={resetScrambler} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', padding: '10px', fontSize: '0.85rem' }}>
+                      Reset Scrambler
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
         </div>
       )}
 

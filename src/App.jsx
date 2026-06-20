@@ -1355,7 +1355,7 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
         )}
 
         {activeTab === 'basics' && (
-          <TamilBasics />
+          <TamilBasics user={user} />
         )}
 
         {activeTab === 'tutor' && (
