@@ -391,91 +391,113 @@ export default function App() {
   };
 
   const analyzePlacementQuizWithAI = async (score, answers) => {
-    setAiPlacementLoading(true);
-    let allotted = 'beginner';
-    if (score >= 8) allotted = 'advanced';
-    else if (score >= 5) allotted = 'intermediate';
+    try {
+      setAiPlacementLoading(true);
+      let allotted = 'beginner';
+      if (score >= 8) allotted = 'advanced';
+      else if (score >= 5) allotted = 'intermediate';
 
-    let report = `Placement evaluated. You scored ${score}/10. Allotted level: ${allotted.toUpperCase()}.`;
+      let report = `Placement evaluated. You scored ${score}/10. Allotted level: ${allotted.toUpperCase()}.`;
 
-    // Check if Gemini key is available for AI analysis report
-    if (apiKey && isValidGeminiKey(apiKey)) {
-      const prompt = `A student just completed an onboarding Tamil placement quiz.
+      // Check if Gemini key is available for AI analysis report
+      if (apiKey && isValidGeminiKey(apiKey)) {
+        try {
+          const prompt = `A student just completed an onboarding Tamil placement quiz.
 Score: ${score}/10.
 Answers details:
 ${placementQuestions.map((q, idx) => {
   const isCorrect = answers[idx] === q.answerIndex;
   return `Q${idx+1} (${q.level} level): ${q.question}
-User answered: "${q.options[answers[idx]] || 'No answer'}" (Correct answer: "${q.options[q.answerIndex]}") - ${isCorrect ? 'CORRECT' : 'WRONG'}`;
+User answered: "${q.options?.[answers[idx]] || 'No answer'}" (Correct answer: "${q.options?.[q.answerIndex]}") - ${isCorrect ? 'CORRECT' : 'WRONG'}`;
 }).join('\n')}
 
 Analyze their performance and write a concise, encouraging 2-sentence summary in English about their Tamil proficiency level and what they should focus on. Keep it friendly and motivational.`;
 
-      const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
-      for (const model of modelsToTry) {
-        try {
-          const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
+          for (const model of modelsToTry) {
+            try {
+              const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                }
+              );
+              if (response.ok) {
+                const data = await response.json();
+                report = data.candidates?.[0]?.content?.parts?.[0]?.text || report;
+                break;
+              }
+            } catch (err) {
+              console.warn(`Placement AI report failed with model ${model}:`, err.message);
             }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            report = data.candidates?.[0]?.content?.parts?.[0]?.text || report;
-            break;
           }
-        } catch (err) {
-          console.warn(`Placement AI report failed with model ${model}:`, err.message);
+        } catch (promptErr) {
+          console.error("Failed to generate/fetch AI placement report:", promptErr);
+        }
+      } else {
+        if (allotted === 'advanced') {
+          report = "Fantastic! You possess a robust command of advanced Tamil vocabulary, grammar rules, and syntax structure. Ready to practice speaking fluently!";
+        } else if (allotted === 'intermediate') {
+          report = "Great job! You have solid intermediate skills and understand general sentence structure. Ready to focus on fluid conversations.";
+        } else {
+          report = "Welcome! You are starting your journey with core Tamil letters, sounds, and basic greetings. We will build your vocabulary step-by-step.";
         }
       }
-    } else {
-      if (allotted === 'advanced') {
-        report = "Fantastic! You possess a robust command of advanced Tamil vocabulary, grammar rules, and syntax structure. Ready to practice speaking fluently!";
-      } else if (allotted === 'intermediate') {
-        report = "Great job! You have solid intermediate skills and understand general sentence structure. Ready to focus on fluid conversations.";
-      } else {
-        report = "Welcome! You are starting your journey with core Tamil letters, sounds, and basic greetings. We will build your vocabulary step-by-step.";
-      }
+
+      // Automatically create the student profile
+      const users = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
+      const newUser = {
+        username: (loginForm.username || '').trim().toLowerCase(),
+        pin: loginForm.pin || '',
+        name: (loginForm.name || '').trim(),
+        level: allotted, // Automatically save the determined level
+        role: loginForm.role || 'student',
+        email: (loginForm.email || '').trim(),
+        phoneCountry: loginForm.phoneCountry || '+91',
+        phone: (loginForm.phone || '').trim(),
+        dob: loginForm.dob || '',
+        gender: loginForm.gender || 'Male',
+        photo: loginForm.photo || '',
+        address: (loginForm.address || '').trim(),
+        country: loginForm.country || 'Select',
+        state: (loginForm.state || '').trim(),
+        city: (loginForm.city || '').trim(),
+        postalCode: (loginForm.postalCode || '').trim(),
+        branch: loginForm.branch || 'Select',
+        placementScore: score,
+        placementReport: report
+      };
+
+      const updated = [...users, newUser];
+      localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
+      localStorage.setItem('tamilan_current_user', JSON.stringify(newUser));
+      
+      // Log in user and clean up states to head to dashboard
+      setUser(newUser);
+      setIsRegisterMode(false);
+      setPlacementQuizActive(false);
+      setPlacementEvaluation(null);
+      setLoginForm(initialLoginFormState);
+      setAiPlacementLoading(false);
+    } catch (globalErr) {
+      console.error("Global error in analyzePlacementQuizWithAI:", globalErr);
+      // Fallback rescue log in
+      const fallbackUser = {
+        username: (loginForm.username || 'student_user').trim().toLowerCase(),
+        pin: loginForm.pin || '1234',
+        name: (loginForm.name || 'Student').trim(),
+        level: 'beginner',
+        role: 'student'
+      };
+      setUser(fallbackUser);
+      setIsRegisterMode(false);
+      setPlacementQuizActive(false);
+      setPlacementEvaluation(null);
+      setLoginForm(initialLoginFormState);
+      setAiPlacementLoading(false);
     }
-
-    // Automatically create the student profile
-    const users = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
-    const newUser = {
-      username: loginForm.username.trim().toLowerCase(),
-      pin: loginForm.pin,
-      name: loginForm.name.trim(),
-      level: allotted, // Automatically save the determined level
-      role: loginForm.role,
-      email: loginForm.email.trim(),
-      phoneCountry: loginForm.phoneCountry,
-      phone: loginForm.phone.trim(),
-      dob: loginForm.dob,
-      gender: loginForm.gender,
-      photo: loginForm.photo,
-      address: loginForm.address.trim(),
-      country: loginForm.country,
-      state: loginForm.state.trim(),
-      city: loginForm.city.trim(),
-      postalCode: loginForm.postalCode.trim(),
-      branch: loginForm.branch,
-      placementScore: score,
-      placementReport: report
-    };
-
-    const updated = [...users, newUser];
-    localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
-    localStorage.setItem('tamilan_current_user', JSON.stringify(newUser));
-    
-    // Log in user and clean up states to head to dashboard
-    setUser(newUser);
-    setIsRegisterMode(false);
-    setPlacementQuizActive(false);
-    setPlacementEvaluation(null);
-    setLoginForm(initialLoginFormState);
-    setAiPlacementLoading(false);
   };
 
   const handleFinalizePlacement = () => {
