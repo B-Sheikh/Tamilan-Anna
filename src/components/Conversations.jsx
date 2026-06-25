@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { MessageSquare, Volume2, Mic, MicOff, Check, AlertCircle, ChevronRight, Award, Play } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { MessageSquare, Volume2, Mic, AlertCircle, ChevronRight, Award, Play } from 'lucide-react';
 
-let activeAudio = null;
-
-export default function Conversations({ apiKey, onLogActivity }) {
+export default function Conversations({ onLogActivity }) {
   const [selectedScenario, setSelectedScenario] = useState(0);
   const [currentTurn, setCurrentTurn] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState(null);
   const [speechResult, setSpeechResult] = useState('');
   const [pronunciationScore, setPronunciationScore] = useState(null);
-  const [recognitionSupported, setRecognitionSupported] = useState(false);
   const [voices, setVoices] = useState([]);
   const [selectedVoiceName, setSelectedVoiceName] = useState('google-cloud-tts');
   
-  let recognition = null;
+  const activeAudioRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   // Curated scenarios with Tamil, Transliteration, and English Translation
   const scenarios = [
@@ -288,17 +286,13 @@ export default function Conversations({ apiKey, onLogActivity }) {
   const activeDialog = currentScenario.dialogs[currentTurn];
 
   useEffect(() => {
-    // Check if SpeechRecognition is supported
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      setRecognitionSupported(true);
-    }
-
     const loadVoices = () => {
       if ('speechSynthesis' in window) {
         const availableVoices = window.speechSynthesis.getVoices();
         const taVoices = availableVoices.filter(v => v.lang.toLowerCase().includes('ta'));
-        setVoices(taVoices);
+        queueMicrotask(() => {
+          setVoices(taVoices);
+        });
       }
     };
     loadVoices();
@@ -315,11 +309,13 @@ export default function Conversations({ apiKey, onLogActivity }) {
   // Text-To-Speech (TTS) using native SpeechSynthesis
   const speakText = (text) => {
     // Stop any active audio player
-    if (activeAudio) {
+    if (activeAudioRef.current) {
       try {
-        activeAudio.pause();
-        activeAudio.currentTime = 0;
-      } catch (e) {}
+        activeAudioRef.current.pause();
+        activeAudioRef.current.currentTime = 0;
+      } catch {
+        // Ignore audio playback control errors
+      }
     }
 
     if ('speechSynthesis' in window) {
@@ -371,7 +367,7 @@ export default function Conversations({ apiKey, onLogActivity }) {
     try {
       const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
       const audio = new Audio(audioUrl);
-      activeAudio = audio;
+      activeAudioRef.current = audio;
       audio.play().catch(e => console.warn("Google TTS blocked by autoplay restrictions:", e));
     } catch (err) {
       console.error("Cloud speech fallback failed:", err);
@@ -383,7 +379,7 @@ export default function Conversations({ apiKey, onLogActivity }) {
     if (!spokenText) return 0;
     
     // Normalize string: remove punctuation, lower case, split words
-    const cleanSpoken = spokenText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
+    const cleanSpoken = spokenText.replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "").trim();
     
     // Count matches
     let matchCount = 0;
@@ -413,12 +409,12 @@ export default function Conversations({ apiKey, onLogActivity }) {
     setIsListening(true);
 
     try {
-      recognition = new SpeechRecognition();
-      recognition.lang = 'ta-IN'; // Tamil language code
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.lang = 'ta-IN'; // Tamil language code
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.maxAlternatives = 1;
 
-      recognition.onresult = (event) => {
+      recognitionRef.current.onresult = (event) => {
         const resultText = event.results[0][0].transcript;
         setSpeechResult(resultText);
         
@@ -434,18 +430,18 @@ export default function Conversations({ apiKey, onLogActivity }) {
         });
       };
 
-      recognition.onerror = (event) => {
+      recognitionRef.current.onerror = (event) => {
         console.error(event);
         setSpeechError(`Speech recognition error: ${event.error}. Defaulting to practice mode.`);
         setIsListening(false);
         simulateSpeechInput();
       };
 
-      recognition.onend = () => {
+      recognitionRef.current.onend = () => {
         setIsListening(false);
       };
 
-      recognition.start();
+      recognitionRef.current.start();
     } catch (e) {
       setSpeechError(e.message);
       setIsListening(false);

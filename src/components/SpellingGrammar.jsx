@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import TamilKeyboard from './TamilKeyboard';
 import { SpellCheck, Keyboard, Sparkles, AlertCircle, CheckCircle, RotateCcw } from 'lucide-react';
 
@@ -129,7 +129,7 @@ Ensure you do not return any markdown tags or backticks (e.g. \`\`\`json). Outpu
           }
         } catch (parseErr) {
           console.error("Failed to parse AI JSON response. Raw output:", rawText);
-          throw new Error("Invalid response format from AI. Please try again.");
+          throw new Error("Invalid response format from AI. Please try again.", { cause: parseErr });
         }
 
         setResults(parsed);

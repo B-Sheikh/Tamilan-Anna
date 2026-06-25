@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, Sparkles, RefreshCw, Send, AlertCircle, VolumeX } from 'lucide-react';
-
-let activeAudio = null;
+import { useState, useEffect, useRef } from 'react';
+import { Mic, MicOff, Volume2, Sparkles, Send, AlertCircle } from 'lucide-react';
 
 export default function VoiceConversation({ apiKey }) {
   const [messages, setMessages] = useState([
@@ -19,195 +17,7 @@ export default function VoiceConversation({ apiKey }) {
 
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
-
-  const topics = [
-    { label: "Introduce Yourself", prompt: "வணக்கம்! உங்களை அறிமுகம் செய்து கொள்ளுங்கள் (உங்க பெயர், ஊர், படிப்பு)." },
-    { label: "Favorite Food", prompt: "உங்களுக்கு பிடித்த உணவுகள் என்னென்ன? ஏன் பிடிக்கும்?" },
-    { label: "Daily Routine", prompt: "இன்று காலை முதல் நீங்கள் என்ன செய்தீர்கள் என்று சொல்லுங்கள்?" },
-    { label: "Weather & Plans", prompt: "இன்று வானிலை எப்படி இருக்கிறது? மாலை என்ன செய்யப் போகிறீர்கள்?" }
-  ];
-
-  useEffect(() => {
-    // Scroll to bottom of messages
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, loading]);
-
-  useEffect(() => {
-    // Initialize Web Speech Recognition
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      setRecognitionSupported(true);
-      const rec = new SpeechRecognition();
-      rec.lang = 'ta-IN';
-      rec.interimResults = false;
-      rec.maxAlternatives = 1;
-
-      rec.onstart = () => {
-        setIsListening(true);
-        setError(null);
-      };
-
-      rec.onresult = (event) => {
-        const spokenText = event.results[0][0].transcript;
-        if (spokenText.trim()) {
-          handleUserResponse(spokenText);
-        }
-      };
-
-      rec.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        if (event.error !== 'no-speech') {
-          setError(`Listening issue: ${event.error}`);
-        }
-        setIsListening(false);
-      };
-
-      rec.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = rec;
-    }
-
-    const loadVoices = () => {
-      if ('speechSynthesis' in window) {
-        const availableVoices = window.speechSynthesis.getVoices();
-        const taVoices = availableVoices.filter(v => v.lang.toLowerCase().includes('ta'));
-        setVoices(taVoices);
-      }
-    };
-    loadVoices();
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
-    }
-    return () => {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-      }
-    };
-  }, []);
-
-  // Text-to-Speech playback
-  const speakText = (text) => {
-    // Stop any active audio player
-    if (activeAudio) {
-      try {
-        activeAudio.pause();
-        activeAudio.currentTime = 0;
-      } catch (e) {}
-    }
-
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-
-    if ('speechSynthesis' in window) {
-      const systemVoices = window.speechSynthesis.getVoices();
-      const hasTaVoice = systemVoices.some(v => v.lang.toLowerCase().includes('ta'));
-      
-      if (hasTaVoice && selectedVoiceName !== 'google-cloud-tts') {
-        setIsSpeaking(true);
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        
-        if (selectedVoiceName === 'default-male') {
-          const maleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
-            (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hemant') || v.name.toLowerCase().includes('valluvar')));
-          if (maleVoice) {
-            utterance.voice = maleVoice;
-          } else {
-            const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
-            if (fallbackTa) utterance.voice = fallbackTa;
-          }
-          utterance.pitch = 0.8; // Lower pitch for simulated male voice
-        } else if (selectedVoiceName === 'default-female') {
-          const femaleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
-            (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('kalpana') || v.name.toLowerCase().includes('sabina') || v.name.toLowerCase().includes('google')));
-          if (femaleVoice) {
-            utterance.voice = femaleVoice;
-          } else {
-            const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
-            if (fallbackTa) utterance.voice = fallbackTa;
-          }
-          utterance.pitch = 1.15; // Slightly higher pitch for simulated female voice
-        } else {
-          const chosenVoice = systemVoices.find(v => v.name === selectedVoiceName);
-          if (chosenVoice) {
-            utterance.voice = chosenVoice;
-          }
-        }
-
-        utterance.lang = 'ta-IN';
-        utterance.rate = 0.8; // Slower rate for clear learner speech delivery
-
-        utterance.onend = () => {
-          setIsSpeaking(false);
-          // Auto-listen trigger once speaking finishes (creates hands-free loop)
-          if (autoListen && recognitionRef.current && !loading) {
-            setTimeout(() => {
-              startListening();
-            }, 300);
-          }
-        };
-
-        utterance.onerror = () => {
-          setIsSpeaking(false);
-        };
-
-        window.speechSynthesis.speak(utterance);
-        return;
-      }
-    }
-
-    // Cloud fallback for systems without Tamil voice packs
-    try {
-      setIsSpeaking(true);
-      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
-      const audio = new Audio(audioUrl);
-      activeAudio = audio;
-      
-      audio.onended = () => {
-        setIsSpeaking(false);
-        if (autoListen && recognitionRef.current && !loading) {
-          setTimeout(() => {
-            startListening();
-          }, 300);
-        }
-      };
-      
-      audio.onerror = () => {
-        setIsSpeaking(false);
-      };
-      
-      audio.play().catch(e => {
-        console.warn("Google TTS blocked by autoplay restrictions:", e);
-        setIsSpeaking(false);
-      });
-    } catch (err) {
-      console.error("Cloud speech fallback failed:", err);
-      setIsSpeaking(false);
-    }
-  };
-
-  const startListening = () => {
-    if (recognitionRef.current && !isListening && !isSpeaking) {
-      try {
-        window.speechSynthesis.cancel(); // stop any current speech
-        recognitionRef.current.start();
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  };
-
-  const stopListening = () => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
-  };
+  const activeAudioRef = useRef(null);
 
   // Trigger Gemini API and fallback
   const handleUserResponse = async (text) => {
@@ -282,6 +92,208 @@ Provide a brief, natural response in Tamil script. Do not write any English tran
       speakText(errorMsg);
     }
   };
+
+  const handleUserResponseRef = useRef(handleUserResponse);
+  useEffect(() => {
+    handleUserResponseRef.current = handleUserResponse;
+  });
+
+  const topics = [
+    { label: "Introduce Yourself", prompt: "வணக்கம்! உங்களை அறிமுகம் செய்து கொள்ளுங்கள் (உங்க பெயர், ஊர், படிப்பு)." },
+    { label: "Favorite Food", prompt: "உங்களுக்கு பிடித்த உணவுகள் என்னென்ன? ஏன் பிடிக்கும்?" },
+    { label: "Daily Routine", prompt: "இன்று காலை முதல் நீங்கள் என்ன செய்தீர்கள் என்று சொல்லுங்கள்?" },
+    { label: "Weather & Plans", prompt: "இன்று வானிலை எப்படி இருக்கிறது? மாலை என்ன செய்யப் போகிறீர்கள்?" }
+  ];
+
+  useEffect(() => {
+    // Scroll to bottom of messages
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, loading]);
+
+  useEffect(() => {
+    // Initialize Web Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      queueMicrotask(() => {
+        setRecognitionSupported(true);
+      });
+      const rec = new SpeechRecognition();
+      rec.lang = 'ta-IN';
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+
+      rec.onstart = () => {
+        setIsListening(true);
+        setError(null);
+      };
+
+      rec.onresult = (event) => {
+        const spokenText = event.results[0][0].transcript;
+        if (spokenText.trim()) {
+          handleUserResponseRef.current(spokenText);
+        }
+      };
+
+      rec.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error !== 'no-speech') {
+          setError(`Listening issue: ${event.error}`);
+        }
+        setIsListening(false);
+      };
+
+      rec.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = rec;
+    }
+
+    const loadVoices = () => {
+      if ('speechSynthesis' in window) {
+        const availableVoices = window.speechSynthesis.getVoices();
+        const taVoices = availableVoices.filter(v => v.lang.toLowerCase().includes('ta'));
+        queueMicrotask(() => {
+          setVoices(taVoices);
+        });
+      }
+    };
+    loadVoices();
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    }
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+      }
+    };
+  }, []);
+
+  // Text-to-Speech playback
+  function speakText(text) {
+    // Stop any active audio player
+    if (activeAudioRef.current) {
+      try {
+        activeAudioRef.current.pause();
+        activeAudioRef.current.currentTime = 0;
+      } catch {
+        // Ignore audio control errors
+      }
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    if ('speechSynthesis' in window) {
+      const systemVoices = window.speechSynthesis.getVoices();
+      const hasTaVoice = systemVoices.some(v => v.lang.toLowerCase().includes('ta'));
+      
+      if (hasTaVoice && selectedVoiceName !== 'google-cloud-tts') {
+        setIsSpeaking(true);
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        if (selectedVoiceName === 'default-male') {
+          const maleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
+            (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hemant') || v.name.toLowerCase().includes('valluvar')));
+          if (maleVoice) {
+            utterance.voice = maleVoice;
+          } else {
+            const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
+            if (fallbackTa) utterance.voice = fallbackTa;
+          }
+          utterance.pitch = 0.8; // Lower pitch for simulated male voice
+        } else if (selectedVoiceName === 'default-female') {
+          const femaleVoice = systemVoices.find(v => (v.lang.toLowerCase().includes('ta')) && 
+            (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('kalpana') || v.name.toLowerCase().includes('sabina') || v.name.toLowerCase().includes('google')));
+          if (femaleVoice) {
+            utterance.voice = femaleVoice;
+          } else {
+            const fallbackTa = systemVoices.find(v => v.lang.toLowerCase().includes('ta'));
+            if (fallbackTa) utterance.voice = fallbackTa;
+          }
+          utterance.pitch = 1.15; // Slightly higher pitch for simulated female voice
+        } else {
+          const chosenVoice = systemVoices.find(v => v.name === selectedVoiceName);
+          if (chosenVoice) {
+            utterance.voice = chosenVoice;
+          }
+        }
+
+        utterance.lang = 'ta-IN';
+        utterance.rate = 0.8; // Slower rate for clear learner speech delivery
+
+        utterance.onend = () => {
+          setIsSpeaking(false);
+          // Auto-listen trigger once speaking finishes (creates hands-free loop)
+          if (autoListen && recognitionRef.current && !loading) {
+            setTimeout(() => {
+              startListening();
+            }, 300);
+          }
+        };
+
+        utterance.onerror = () => {
+          setIsSpeaking(false);
+        };
+
+        window.speechSynthesis.speak(utterance);
+        return;
+      }
+    }
+
+    // Cloud fallback for systems without Tamil voice packs
+    try {
+      setIsSpeaking(true);
+      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
+      const audio = new Audio(audioUrl);
+      activeAudioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsSpeaking(false);
+        if (autoListen && recognitionRef.current && !loading) {
+          setTimeout(() => {
+            startListening();
+          }, 300);
+        }
+      };
+      
+      audio.onerror = () => {
+        setIsSpeaking(false);
+      };
+      
+      audio.play().catch(e => {
+        console.warn("Google TTS blocked by autoplay restrictions:", e);
+        setIsSpeaking(false);
+      });
+    } catch (err) {
+      console.error("Cloud speech fallback failed:", err);
+      setIsSpeaking(false);
+    }
+  };
+
+  const startListening = () => {
+    if (recognitionRef.current && !isListening && !isSpeaking) {
+      try {
+        window.speechSynthesis.cancel(); // stop any current speech
+        recognitionRef.current.start();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+  };
+
+  // Definition moved to top to prevent declaration/hoisting issues
 
   const handleTopicSelect = (prompt) => {
     speakText(prompt);

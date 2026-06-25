@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, Clock, Download, Share2, Sparkles, Check, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, Clock, Download, Share2, Sparkles } from 'lucide-react';
 
 export default function Scheduler({ user }) {
   const [weeklyGoal, setWeeklyGoal] = useState(4); // hours per week

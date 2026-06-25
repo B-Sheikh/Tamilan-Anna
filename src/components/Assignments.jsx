@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Calendar, AlertCircle, CheckCircle2, Award, ClipboardList, PlusCircle, Check, Send } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Calendar, AlertCircle, CheckCircle2, Award, ClipboardList, PlusCircle, Send } from 'lucide-react';
 import TamilKeyboard from './TamilKeyboard';
 
 export default function Assignments({ user, apiKey }) {
@@ -27,8 +27,9 @@ export default function Assignments({ user, apiKey }) {
   useEffect(() => {
     // Load assignments
     const savedAssignments = localStorage.getItem('tamilan_assignments');
+    let loadedAssignments = [];
     if (savedAssignments) {
-      setAssignments(JSON.parse(savedAssignments));
+      loadedAssignments = JSON.parse(savedAssignments);
     } else {
       // Seed some assignments
       const defaultAssignments = [
@@ -50,14 +51,20 @@ export default function Assignments({ user, apiKey }) {
         }
       ];
       localStorage.setItem('tamilan_assignments', JSON.stringify(defaultAssignments));
-      setAssignments(defaultAssignments);
+      loadedAssignments = defaultAssignments;
     }
 
     // Load submissions
     const savedSubmissions = localStorage.getItem('tamilan_submissions');
+    let loadedSubmissions = [];
     if (savedSubmissions) {
-      setSubmissions(JSON.parse(savedSubmissions));
+      loadedSubmissions = JSON.parse(savedSubmissions);
     }
+
+    queueMicrotask(() => {
+      setAssignments(loadedAssignments);
+      setSubmissions(loadedSubmissions);
+    });
   }, []);
 
   // Save assignments helper
@@ -159,7 +166,6 @@ Return your evaluation as a clean JSON object containing:
 Do not return markdown tags. Return only the raw JSON.`;
 
     const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
-    let success = false;
     let evalResult = { score: 85, feedback: "Good effort! Practice more letters." };
 
     for (const model of modelsToTry) {
@@ -187,7 +193,6 @@ Do not return markdown tags. Return only the raw JSON.`;
         } else {
           evalResult = JSON.parse(rawText.trim());
         }
-        success = true;
         break;
       } catch (err) {
         console.warn(`AI Grading failed on ${model}:`, err.message);

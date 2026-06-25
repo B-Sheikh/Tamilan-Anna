@@ -13,7 +13,6 @@ import {
   Video,
   SpellCheck,
   BarChart3,
-  Lock,
   Award,
   Flame,
   Target,
@@ -31,7 +30,12 @@ import {
   Mic,
   ClipboardList,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
+  Check,
+  Heart,
+  Zap,
+  Diamond
 } from 'lucide-react';
 
 
@@ -141,6 +145,7 @@ const placementQuestions = [
 export default function App() {
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false); // Toggle between Landing Page & Login Page
+  const [showTeacherModal, setShowTeacherModal] = useState(false); // Modal for Teacher Application
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Interactive preview state for landing page
@@ -150,7 +155,7 @@ export default function App() {
   const isValidGeminiKey = (key) => typeof key === 'string' && (key.trim().startsWith('AIzaSy') || key.trim().startsWith('AQ.'));
 
   // TO USE GEMINI LIVE FEATURE: Put your Gemini API Key directly inside the quotes below:
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 'YOUR_API_KEY_HERE';
 
   const initialLoginFormState = {
     username: '',
@@ -203,7 +208,6 @@ export default function App() {
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   // AI Tutor Bot State Definitions
-  const [tutorOpen, setTutorOpen] = useState(false);
   const [tutorQuery, setTutorQuery] = useState('');
   const [tutorMessages, setTutorMessages] = useState([
     { role: 'assistant', text: 'வணக்கம்! I am Tutor Anna (தமிழன் அண்ணா), your virtual Tamil companion. Ask me any doubts about spelling, grammar, or conversations!' }
@@ -306,7 +310,18 @@ export default function App() {
 
     const savedUser = localStorage.getItem('tamilan_current_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      // Append gamification defaults for backward compatibility
+      const mergedUser = {
+        hearts: 5,
+        xp: 0,
+        gems: 0,
+        streakFreezeActive: false,
+        ...parsedUser
+      };
+      queueMicrotask(() => {
+        setUser(mergedUser);
+      });
     }
   }, []);
 
@@ -386,7 +401,11 @@ export default function App() {
         state: loginForm.state.trim(),
         city: loginForm.city.trim(),
         postalCode: loginForm.postalCode.trim(),
-        branch: loginForm.branch
+        branch: loginForm.branch,
+        hearts: 5,
+        xp: 0,
+        gems: 0,
+        streakFreezeActive: false
       };
       const updated = [...users, newUser];
       localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
@@ -453,64 +472,68 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
         }
       }
 
-      // Automatically create the student profile
-      const users = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
-      const newUser = {
-        username: (loginForm.username || '').trim().toLowerCase(),
-        pin: loginForm.pin || '',
-        name: (loginForm.name || '').trim(),
-        level: allotted, // Automatically save the determined level
-        role: loginForm.role || 'student',
-        email: (loginForm.email || '').trim(),
-        phoneCountry: loginForm.phoneCountry || '+91',
-        phone: (loginForm.phone || '').trim(),
-        dob: loginForm.dob || '',
-        gender: loginForm.gender || 'Male',
-        photo: loginForm.photo || '',
-        address: (loginForm.address || '').trim(),
-        country: loginForm.country || 'Select',
-        state: (loginForm.state || '').trim(),
-        city: (loginForm.city || '').trim(),
-        postalCode: (loginForm.postalCode || '').trim(),
-        branch: loginForm.branch || 'Select',
-        placementScore: score,
-        placementReport: report
-      };
-
-      const updated = [...users, newUser];
-      localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
-      localStorage.setItem('tamilan_current_user', JSON.stringify(newUser));
-      
-      // Log in user and clean up states to head to dashboard
-      setUser(newUser);
-      setIsRegisterMode(false);
-      setPlacementQuizActive(false);
-      setPlacementEvaluation(null);
-      setLoginForm(initialLoginFormState);
+      // Instead of logging in right away, we just show the evaluation UI.
+      setPlacementEvaluation({
+        score: score,
+        allottedLevel: allotted,
+        finalLevel: allotted,
+        aiReport: report
+      });
       setAiPlacementLoading(false);
     } catch (globalErr) {
       console.error("Global error in analyzePlacementQuizWithAI:", globalErr);
-      // Fallback rescue log in
-      const fallbackUser = {
-        username: (loginForm.username || 'student_user').trim().toLowerCase(),
-        pin: loginForm.pin || '1234',
-        name: (loginForm.name || 'Student').trim(),
-        level: 'beginner',
-        role: 'student'
-      };
-      setUser(fallbackUser);
-      setIsRegisterMode(false);
-      setPlacementQuizActive(false);
-      setPlacementEvaluation(null);
-      setLoginForm(initialLoginFormState);
+      // Fallback rescue
+      setPlacementEvaluation({
+        score: score,
+        allottedLevel: 'beginner',
+        finalLevel: 'beginner',
+        aiReport: "An error occurred during evaluation. We recommend starting at the Beginner level."
+      });
       setAiPlacementLoading(false);
     }
   };
 
   const handleFinalizePlacement = () => {
-    // Retained for fallback compatibility
+    if (!placementEvaluation) return;
+
+    // Now we create the profile and log them in
+    const users = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
+    const newUser = {
+      username: (loginForm.username || '').trim().toLowerCase(),
+      pin: loginForm.pin || '',
+      name: (loginForm.name || '').trim(),
+      level: placementEvaluation.finalLevel, // Save the level they finalized
+      role: 'student',
+      email: (loginForm.email || '').trim(),
+      phoneCountry: loginForm.phoneCountry || '+91',
+      phone: (loginForm.phone || '').trim(),
+      dob: loginForm.dob || '',
+      gender: loginForm.gender || 'Male',
+      photo: loginForm.photo || '',
+      address: (loginForm.address || '').trim(),
+      country: loginForm.country || 'Select',
+      state: (loginForm.state || '').trim(),
+      city: (loginForm.city || '').trim(),
+      postalCode: (loginForm.postalCode || '').trim(),
+      branch: loginForm.branch || 'Select',
+      placementScore: placementEvaluation.score,
+      placementReport: placementEvaluation.aiReport,
+      hearts: 5,
+      xp: 0,
+      gems: 0,
+      streakFreezeActive: false
+    };
+
+    const updated = [...users, newUser];
+    localStorage.setItem('tamilan_users_list', JSON.stringify(updated));
+    localStorage.setItem('tamilan_current_user', JSON.stringify(newUser));
+    
+    // Log in user and clean up states to head to dashboard
+    setUser(newUser);
+    setIsRegisterMode(false);
     setPlacementQuizActive(false);
     setPlacementEvaluation(null);
+    setLoginForm(initialLoginFormState);
   };
 
   const handleLogout = () => {
@@ -518,6 +541,19 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
     setUser(null);
     setShowLogin(false);
     setActiveTab('dashboard');
+  };
+
+  const updateUserGamification = (updates) => {
+    setUser(prev => {
+      if (!prev) return prev;
+      const nextUser = { ...prev, ...updates };
+      // Save to localStorage
+      localStorage.setItem('tamilan_current_user', JSON.stringify(nextUser));
+      const usersList = JSON.parse(localStorage.getItem('tamilan_users_list') || '[]');
+      const updatedList = usersList.map(u => u.username === nextUser.username ? nextUser : u);
+      localStorage.setItem('tamilan_users_list', JSON.stringify(updatedList));
+      return nextUser;
+    });
   };
 
   // Activity logger callback for subcomponents
@@ -610,10 +646,63 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
               Tamilan Anna
             </h2>
           </div>
-          <button onClick={() => { setIsRegisterMode(false); setLoginError(null); setShowLogin(true); }} className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
-            Enter Classroom
-          </button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button onClick={() => setShowTeacherModal(true)} className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
+              Join as Teacher
+            </button>
+            <button onClick={() => { setIsRegisterMode(false); setLoginError(null); setShowLogin(true); }} className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.85rem', background: 'var(--accent-primary)', color: 'white', border: 'none' }}>
+              Enter Classroom
+            </button>
+          </div>
         </header>
+
+        {showTeacherModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999, padding: '20px'
+          }}>
+            <div className="glass-panel animate-scale-in" style={{
+              background: '#ffffff', borderRadius: '8px', padding: '32px',
+              maxWidth: '480px', width: '100%', textAlign: 'center',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              border: '1px solid var(--panel-border)'
+            }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)', marginBottom: '20px' }}>
+                <BookOpen size={32} />
+              </div>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>Join as a Teacher</h2>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '24px' }}>
+                We're always looking for passionate Tamil educators! Please send us an email with your application.
+              </p>
+              
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '4px', border: '1px solid #cbd5e1', textAlign: 'left', marginBottom: '24px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                <strong>To:</strong> admin@tamilananna.com<br/>
+                <strong>Subject:</strong> Application for Teacher Position<br/>
+                <hr style={{ margin: '8px 0', border: 'none', borderTop: '1px solid #cbd5e1' }} />
+                Please include in your email:<br/>
+                - Your Name<br/>
+                - Teaching Experience<br/>
+                - Your CV (Attached as PDF)
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => setShowTeacherModal(false)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '12px' }}>
+                  Close
+                </button>
+                <a 
+                  href="mailto:admin@tamilananna.com?subject=Application%20for%20Teacher%20Position&body=Name:%20%0AExperience:%20%0A%0APlease%20attach%20your%20CV%20before%20sending." 
+                  className="btn-primary" 
+                  style={{ flex: 1, justifyContent: 'center', padding: '12px', textDecoration: 'none' }}
+                  onClick={() => setShowTeacherModal(false)}
+                >
+                  Open Mail App
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Hero Section Split Layout */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '50px', alignItems: 'center', minHeight: '500px', position: 'relative', zIndex: 10 }}>
@@ -1129,19 +1218,6 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
                     </div>
                   </div>
 
-                  {/* Portal Role Selection */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>PORTAL ROLE</label>
-                    <select
-                      value={loginForm.role}
-                      onChange={(e) => setLoginForm({ ...loginForm, role: e.target.value })}
-                      className="form-input"
-                      style={{ background: 'white' }}
-                    >
-                      <option value="student">Student (மாணவர்)</option>
-                      <option value="admin">Instructor / Admin (ஆசிரியர்)</option>
-                    </select>
-                  </div>
                 </div>
 
                 {/* Right Column */}
@@ -1555,15 +1631,23 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
               Tamilan Anna Classroom v1.0 • Connected to {isValidGeminiKey(apiKey) ? 'Gemini Live' : 'Simulated AI local engine'}
             </span>
           </div>
-          {/* Quick Metrics */}
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div className="mini-stat-card">
-              <Flame size={16} className="icon-orange" />
-              <span>{stats.streak} Day Streak</span>
+          {/* Quick Metrics / Gamification Status */}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="mini-stat-card" style={{ borderColor: 'rgba(239, 68, 68, 0.2)', background: 'rgba(239, 68, 68, 0.05)' }}>
+              <Heart size={16} fill="var(--error)" color="var(--error)" />
+              <span style={{ fontWeight: 700, color: 'var(--error)' }}>{user.hearts}</span>
             </div>
-            <div className="mini-stat-card">
-              <Award size={16} className="icon-gold" />
-              <span>{stats.accuracy}% Avg Score</span>
+            <div className="mini-stat-card" style={{ borderColor: 'rgba(234, 179, 8, 0.2)', background: 'rgba(234, 179, 8, 0.05)' }}>
+              <Zap size={16} fill="#eab308" color="#eab308" />
+              <span style={{ fontWeight: 700, color: '#ca8a04' }}>{user.xp} XP</span>
+            </div>
+            <div className="mini-stat-card" style={{ borderColor: 'rgba(56, 189, 248, 0.2)', background: 'rgba(56, 189, 248, 0.05)' }}>
+              <Diamond size={16} fill="#38bdf8" color="#38bdf8" />
+              <span style={{ fontWeight: 700, color: '#0284c7' }}>{user.gems}</span>
+            </div>
+            <div className="mini-stat-card" style={{ borderColor: 'rgba(249, 115, 22, 0.2)', background: 'rgba(249, 115, 22, 0.05)' }}>
+              <Flame size={16} fill={stats.streak > 0 ? "#f97316" : "transparent"} color="#f97316" />
+              <span style={{ fontWeight: 700, color: '#ea580c' }}>{stats.streak}</span>
             </div>
           </div>
         </div>
@@ -1595,81 +1679,130 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
               </div>
             </div>
 
-            {/* CURRICULUM SYLLABUS PATHWAYS GRID */}
-            <div className="glass-panel" style={{ padding: '24px', background: 'white' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <Compass className="icon-cyan" size={20} />
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-primary)' }}>Interactive Syllabus Pathways</h3>
+            {/* GAMIFIED DASHBOARD: PATH & WIDGETS */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px', alignItems: 'start' }}>
+              
+              {/* Left Column: Vertical Skill Tree Path */}
+              <div className="glass-panel" style={{ padding: '40px 24px', background: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                <h3 style={{ margin: '0 0 30px 0', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center', width: '100%' }}>Your Learning Path</h3>
+                
+                <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '50px', width: '100%', maxWidth: '400px' }}>
+                  {/* CSS Path Line */}
+                  <div style={{ position: 'absolute', top: '40px', bottom: '40px', left: '50%', width: '16px', background: '#e2e8f0', transform: 'translateX(-50%)', zIndex: 0, borderRadius: '8px' }}></div>
+                  <div style={{ position: 'absolute', top: '40px', height: stats.drills > 0 ? '100px' : '0px', left: '50%', width: '16px', background: 'var(--accent-primary)', transform: 'translateX(-50%)', zIndex: 0, borderRadius: '8px', transition: 'height 0.5s ease' }}></div>
+
+                  {/* Node 1 */}
+                  <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'flex-start', marginLeft: '10%' }}>
+                    <button 
+                      onClick={() => setActiveTab('basics')}
+                      style={{ width: '80px', height: '80px', borderRadius: '50%', background: stats.drills > 0 ? 'var(--accent-primary)' : 'var(--accent-primary)', color: 'white', border: 'none', boxShadow: '0 8px 0 rgba(79, 70, 229, 0.5)', cursor: 'pointer', transform: 'translateY(-4px)', transition: 'transform 0.1s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      onMouseDown={(e) => e.currentTarget.style.transform = 'translateY(4px)'}
+                      onMouseUp={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                    >
+                      <CheckCircle size={32} />
+                    </button>
+                    <span style={{ marginTop: '12px', fontWeight: 700, color: 'var(--text-primary)', fontSize: '1.1rem' }}>Alphabets</span>
+                  </div>
+
+                  {/* Node 2 */}
+                  <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'flex-end', marginRight: '10%' }}>
+                    <button 
+                      onClick={() => setActiveTab('conversation')}
+                      style={{ width: '80px', height: '80px', borderRadius: '50%', background: stats.conversations > 0 ? 'var(--accent-secondary)' : (stats.drills > 0 ? 'var(--accent-secondary)' : '#e2e8f0'), color: stats.drills > 0 ? 'white' : '#94a3b8', border: 'none', boxShadow: stats.drills > 0 ? '0 8px 0 rgba(13, 148, 136, 0.5)' : '0 8px 0 #cbd5e1', cursor: stats.drills > 0 ? 'pointer' : 'not-allowed', transform: 'translateY(-4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: (stats.drills > 0 && stats.conversations === 0) ? 'bounce 2s infinite' : 'none' }}
+                    >
+                      <PlayCircle size={32} />
+                    </button>
+                    <span style={{ marginTop: '12px', fontWeight: 700, color: 'var(--text-primary)', fontSize: '1.1rem' }}>Greetings</span>
+                  </div>
+
+                  {/* Node 3 */}
+                  <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'flex-start', marginLeft: '20%' }}>
+                    <button 
+                      onClick={() => stats.conversations > 0 && setActiveTab('conversation')}
+                      style={{ width: '80px', height: '80px', borderRadius: '50%', background: stats.accuracy >= 80 ? 'var(--error)' : (stats.conversations > 0 ? 'var(--error)' : '#e2e8f0'), color: stats.conversations > 0 ? 'white' : '#94a3b8', border: 'none', boxShadow: stats.conversations > 0 ? '0 8px 0 rgba(220, 38, 38, 0.5)' : '0 8px 0 #cbd5e1', cursor: stats.conversations > 0 ? 'pointer' : 'not-allowed', transform: 'translateY(-4px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <Compass size={32} />
+                    </button>
+                    <span style={{ marginTop: '12px', fontWeight: 700, color: 'var(--text-primary)', fontSize: '1.1rem' }}>Restaurant</span>
+                  </div>
+                </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-                {/* Module 1 */}
-                <div className="syllabus-module-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span className="module-label">MODULE 1</span>
-                    {stats.drills > 0 ? (
-                      <span className="module-status-completed"><CheckCircle size={14} /> Completed</span>
-                    ) : (
-                      <span className="module-status-pending">Not Started</span>
-                    )}
+              {/* Right Column: Widgets */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                
+                {/* Daily Goal Widget */}
+                <div className="glass-panel" style={{ padding: '20px', background: 'white' }}>
+                  <h4 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Zap size={18} color="#eab308" /> Daily Goal
+                  </h4>
+                  <div style={{ background: '#f1f5f9', borderRadius: '12px', height: '16px', width: '100%', overflow: 'hidden' }}>
+                    <div style={{ background: '#eab308', height: '100%', width: `${Math.min(((user?.xp || 0) / 50) * 100, 100)}%`, transition: 'width 0.5s ease' }}></div>
                   </div>
-                  <h4 className="module-title">Alphabets & Modifiers</h4>
-                  <p className="module-desc">Type letters mother (அம்மா) using combined vowel modifier keys.</p>
-                  <button onClick={() => setActiveTab('grammar')} className="module-action-btn">
-                    Open Keyboard <PlayCircle size={14} />
-                  </button>
+                  <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'right' }}>
+                    {user?.xp || 0} / 50 XP
+                  </p>
+                  {user?.xp >= 50 && (
+                    <div style={{ marginTop: '12px', padding: '8px', background: 'rgba(234, 179, 8, 0.1)', color: '#ca8a04', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, textAlign: 'center' }}>
+                      Daily Goal Met! +10 Gems 💎
+                    </div>
+                  )}
                 </div>
 
-                {/* Module 2 */}
-                <div className="syllabus-module-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span className="module-label">MODULE 2</span>
-                    {stats.conversations > 0 ? (
-                      <span className="module-status-completed"><CheckCircle size={14} /> Completed</span>
+                {/* Shop Widget */}
+                <div className="glass-panel" style={{ padding: '20px', background: 'white' }}>
+                  <h4 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Diamond size={18} color="#38bdf8" /> Store
+                  </h4>
+                  
+                  {/* Buy Streak Freeze */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div>
+                      <span style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem' }}>Streak Freeze</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Protects streak if missed.</span>
+                    </div>
+                    {user?.streakFreezeActive ? (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 700 }}>Equipped</span>
                     ) : (
-                      <span className="module-status-pending">Not Started</span>
+                      <button 
+                        onClick={() => {
+                          if (user.gems >= 200) {
+                            updateUserGamification({ gems: user.gems - 200, streakFreezeActive: true });
+                          } else {
+                            alert("Not enough gems!");
+                          }
+                        }}
+                        style={{ padding: '6px 12px', borderRadius: '16px', background: 'var(--bg-secondary)', border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        200 💎
+                      </button>
                     )}
                   </div>
-                  <h4 className="module-title">First Conversation</h4>
-                  <p className="module-desc">Introduce yourself and speak standard Tamil greetings aloud.</p>
-                  <button onClick={() => setActiveTab('conversation')} className="module-action-btn">
-                    Start Dialogue <PlayCircle size={14} />
-                  </button>
+
+                  {/* Refill Hearts */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
+                    <div>
+                      <span style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem' }}>Refill Hearts ❤️</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Get full 5 hearts.</span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        if (user?.hearts >= 5) {
+                          alert("You already have full hearts!");
+                          return;
+                        }
+                        if (user.gems >= 350) {
+                          updateUserGamification({ gems: user.gems - 350, hearts: 5 });
+                        } else {
+                          alert("Not enough gems! Keep practicing to earn more.");
+                        }
+                      }}
+                      style={{ padding: '6px 12px', borderRadius: '16px', background: 'var(--bg-secondary)', border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      350 💎
+                    </button>
+                  </div>
                 </div>
 
-                {/* Module 3 */}
-                <div className="syllabus-module-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span className="module-label">MODULE 3</span>
-                    {stats.accuracy >= 80 ? (
-                      <span className="module-status-completed"><CheckCircle size={14} /> Completed</span>
-                    ) : (
-                      <span className="module-status-pending">Not Started</span>
-                    )}
-                  </div>
-                  <h4 className="module-title">Restaurant Order</h4>
-                  <p className="module-desc">Order a masala dosa & ask for less spicy configurations.</p>
-                  <button onClick={() => setActiveTab('conversation')} className="module-action-btn">
-                    Start Dialogue <PlayCircle size={14} />
-                  </button>
-                </div>
-
-                {/* Module 4 */}
-                <div className="syllabus-module-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span className="module-label">MODULE 4</span>
-                    {stats.drills > 2 ? (
-                      <span className="module-status-completed"><CheckCircle size={14} /> Completed</span>
-                    ) : (
-                      <span className="module-status-pending">Not Started</span>
-                    )}
-                  </div>
-                  <h4 className="module-title">Grammar Rules clinic</h4>
-                  <p className="module-desc">Check common doubled rules (வலிமிகல் rules) for letters.</p>
-                  <button onClick={() => setActiveTab('grammar')} className="module-action-btn">
-                    Check Syntax <PlayCircle size={14} />
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -1789,7 +1922,7 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
         )}
 
         {activeTab === 'basics' && (
-          <TamilBasics user={user} />
+          <TamilBasics user={user} updateUserGamification={updateUserGamification} />
         )}
 
         {activeTab === 'tutor' && (

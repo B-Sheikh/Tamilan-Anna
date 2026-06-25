@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Play, ExternalLink, Video } from 'lucide-react';
+import { useState } from 'react';
+import { ExternalLink, Video } from 'lucide-react';
 
 export default function VideoSection() {
   const [activeCategory, setActiveCategory] = useState('all');

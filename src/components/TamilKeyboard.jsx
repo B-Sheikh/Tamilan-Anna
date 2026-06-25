@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function TamilKeyboard({ onKeyPress, targetInputRef }) {
   const vowels = [

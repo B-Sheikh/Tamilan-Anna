@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { GraduationCap, Volume2, Sparkles, BookOpen, Layers, CheckCircle2, AlertCircle, PenTool, Gamepad2, RotateCcw } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { GraduationCap, Volume2, Sparkles, BookOpen, Layers, CheckCircle2, PenTool, Gamepad2, RotateCcw } from 'lucide-react';
 
-let activeAudio = null;
-
-export default function TamilBasics({ user, onLogActivity }) {
+export default function TamilBasics({ user, updateUserGamification }) {
+  const activeAudioRef = useRef(null);
   const currentLevel = user?.level || 'beginner';
   
   const [activeSubTab, setActiveSubTab] = useState(
@@ -22,42 +21,46 @@ export default function TamilBasics({ user, onLogActivity }) {
 
   // Vowels Data
   const vowels = [
-    { char: 'அ', sound: 'a', pronunciation: 'short a (as in cup)', example: 'அம்மா (Amma - Mother)' },
-    { char: 'ஆ', sound: 'aa', pronunciation: 'long a (as in father)', example: 'ஆடு (Aadu - Goat)' },
-    { char: 'இ', sound: 'i', pronunciation: 'short i (as in pin)', example: 'இலை (Ilai - Leaf)' },
-    { char: 'ஈ', sound: 'ee', pronunciation: 'long i (as in seat)', example: 'ஈட்டி (Eetti - Spear)' },
-    { char: 'உ', sound: 'u', pronunciation: 'short u (as in put)', example: 'உரல் (Ural - Mortar)' },
-    { char: 'ஊ', sound: 'oo', pronunciation: 'long u (as in boot)', example: 'ஊஞ்சல் (Oonjal - Swing)' },
-    { char: 'எ', sound: 'e', pronunciation: 'short e (as in pen)', example: 'எலி (Eli - Rat)' },
-    { char: 'ஏ', sound: 'ae', pronunciation: 'long e (as in pay)', example: 'ஏணி (Aeni - Ladder)' },
-    { char: 'ஐ', sound: 'ai', pronunciation: 'diphthong ai (as in fly)', example: 'ஐந்து (Aindhu - Five)' },
-    { char: 'ஒ', sound: 'o', pronunciation: 'short o (as in go)', example: 'ஒட்டகம் (Ottagam - Camel)' },
-    { char: 'ஓ', sound: 'oo', pronunciation: 'long o (as in boat)', example: 'ஓடம் (Odam - Boat)' },
-    { char: 'ஔ', sound: 'au', pronunciation: 'diphthong au (as in cow)', example: 'ஔவையார் (Avvaiyar - Poet)' },
-    { char: 'ஃ', sound: 'ak', pronunciation: 'special Ayutha letter (guttural)', example: 'எஃகு (Ehgu - Steel)' }
+    { char: 'அ', sound: 'a', pronunciation: 'short a (as in cup)', example: 'அம்மா (Amma - Mother)', imageWord: 'mother,kid' },
+    { char: 'ஆ', sound: 'aa', pronunciation: 'long a (as in father)', example: 'ஆடு (Aadu - Goat)', imageWord: 'goat,animal' },
+    { char: 'இ', sound: 'i', pronunciation: 'short i (as in pin)', example: 'இலை (Ilai - Leaf)', imageWord: 'leaf,nature' },
+    { char: 'ஈ', sound: 'ee', pronunciation: 'long i (as in seat)', example: 'ஈட்டி (Eetti - Spear)', imageWord: 'spear,weapon' },
+    { char: 'உ', sound: 'u', pronunciation: 'short u (as in put)', example: 'உரல் (Ural - Mortar)', imageWord: 'mortar,pestle' },
+    { char: 'ஊ', sound: 'oo', pronunciation: 'long u (as in boot)', example: 'ஊஞ்சல் (Oonjal - Swing)', imageWord: 'swing,playground' },
+    { char: 'எ', sound: 'e', pronunciation: 'short e (as in pen)', example: 'எலி (Eli - Rat)', imageWord: 'mouse,cartoon' },
+    { char: 'ஏ', sound: 'ae', pronunciation: 'long e (as in pay)', example: 'ஏணி (Aeni - Ladder)', imageWord: 'ladder,climb' },
+    { char: 'ஐ', sound: 'ai', pronunciation: 'diphthong ai (as in fly)', example: 'ஐந்து (Aindhu - Five)', imageWord: 'five,number' },
+    { char: 'ஒ', sound: 'o', pronunciation: 'short o (as in go)', example: 'ஒட்டகம் (Ottagam - Camel)', imageWord: 'camel,desert' },
+    { char: 'ஓ', sound: 'oo', pronunciation: 'long o (as in boat)', example: 'ஓடம் (Odam - Boat)', imageWord: 'boat,river' },
+    { char: 'ஔ', sound: 'au', pronunciation: 'diphthong au (as in cow)', example: 'ஔவையார் (Avvaiyar - Poet)', imageWord: 'poet,grandmother' },
+    { char: 'ஃ', sound: 'ak', pronunciation: 'special Ayutha letter (guttural)', example: 'எஃகு (Ehgu - Steel)', imageWord: 'steel,metal' }
   ];
+
+  const [vowelFlashcardIndex, setVowelFlashcardIndex] = useState(0);
 
   // Consonants Data
   const consonants = [
-    { char: 'க்', sound: 'k / g', pronunciation: 'k (soft) or g (hard)', example: 'கண் (Kan - Eye)' },
-    { char: 'ங்', sound: 'ng', pronunciation: 'ng (as in sing)', example: 'சிங்கம் (Singam - Lion)' },
-    { char: 'ச்', sound: 'ch / s', pronunciation: 'ch (as in chat) or s', example: 'சட்டை (Sattai - Shirt)' },
-    { char: 'ஞ்', sound: 'ny', pronunciation: 'ny (as in canyon)', example: 'ஞாயிறு (Nyayiru - Sunday)' },
-    { char: 'ட்', sound: 't / d', pronunciation: 'retroflex t or d', example: 'படம் (Padam - Picture)' },
-    { char: 'ண்', sound: 'n', pronunciation: 'retroflex n (curled tongue)', example: 'வண்டு (Vandu - Beetle)' },
-    { char: 'த்', sound: 'th', pronunciation: 'dental th (as in think)', example: 'தவளை (Thavalai - Frog)' },
-    { char: 'ந்', sound: 'n', pronunciation: 'dental n', example: 'நண்டு (Nandu - Crab)' },
-    { char: 'ப்', sound: 'p / b', pronunciation: 'p or b', example: 'பந்து (Pandhu - Ball)' },
-    { char: 'ம்', sound: 'm', pronunciation: 'm (as in man)', example: 'மரம் (Maram - Tree)' },
-    { char: 'ய்', sound: 'y', pronunciation: 'y (as in yes)', example: 'யானை (Yaanai - Elephant)' },
-    { char: 'ர்', sound: 'r', pronunciation: 'soft r', example: 'ரயில் (Rayil - Train)' },
-    { char: 'ல்', sound: 'l', pronunciation: 'dental l (tongue on teeth)', example: 'அணில் (Anil - Squirrel)' },
-    { char: 'வ்', sound: 'v', pronunciation: 'v / w sound', example: 'வண்டி (Vandi - Cart)' },
-    { char: 'ழ்', sound: 'zha', pronunciation: 'retroflex approximant (special curl)', example: 'தமிழ் (Thamizh - Tamil)' },
-    { char: 'ள்', sound: 'l', pronunciation: 'retroflex l (tongue curled back)', example: 'வாள் (Vaal - Sword)' },
-    { char: 'ற்', sound: 'tr / r', pronunciation: 'hard tr or r', example: 'பறவை (Paravai - Bird)' },
-    { char: 'ன்', sound: 'n', pronunciation: 'alveolar n', example: 'மீன் (Meen - Fish)' }
+    { char: 'க்', sound: 'k / g', pronunciation: 'k (soft) or g (hard)', example: 'கண் (Kan - Eye)', imageWord: 'eye,cartoon' },
+    { char: 'ங்', sound: 'ng', pronunciation: 'ng (as in sing)', example: 'சிங்கம் (Singam - Lion)', imageWord: 'lion,animal' },
+    { char: 'ச்', sound: 'ch / s', pronunciation: 'ch (as in chat) or s', example: 'சட்டை (Sattai - Shirt)', imageWord: 'shirt,clothes' },
+    { char: 'ஞ்', sound: 'ny', pronunciation: 'ny (as in canyon)', example: 'ஞாயிறு (Nyayiru - Sunday)', imageWord: 'sun,cartoon' },
+    { char: 'ட்', sound: 't / d', pronunciation: 'retroflex t or d', example: 'படம் (Padam - Picture)', imageWord: 'picture,frame' },
+    { char: 'ண்', sound: 'n', pronunciation: 'retroflex n (curled tongue)', example: 'வண்டு (Vandu - Beetle)', imageWord: 'beetle,bug' },
+    { char: 'த்', sound: 'th', pronunciation: 'dental th (as in think)', example: 'தவளை (Thavalai - Frog)', imageWord: 'frog,cartoon' },
+    { char: 'ந்', sound: 'n', pronunciation: 'dental n', example: 'நண்டு (Nandu - Crab)', imageWord: 'crab,ocean' },
+    { char: 'ப்', sound: 'p / b', pronunciation: 'p or b', example: 'பந்து (Pandhu - Ball)', imageWord: 'ball,toy' },
+    { char: 'ம்', sound: 'm', pronunciation: 'm (as in man)', example: 'மரம் (Maram - Tree)', imageWord: 'tree,nature' },
+    { char: 'ய்', sound: 'y', pronunciation: 'y (as in yes)', example: 'யானை (Yaanai - Elephant)', imageWord: 'elephant,animal' },
+    { char: 'ர்', sound: 'r', pronunciation: 'soft r', example: 'ரயில் (Rayil - Train)', imageWord: 'train,vehicle' },
+    { char: 'ல்', sound: 'l', pronunciation: 'dental l (tongue on teeth)', example: 'அணில் (Anil - Squirrel)', imageWord: 'squirrel,animal' },
+    { char: 'வ்', sound: 'v', pronunciation: 'v / w sound', example: 'வண்டி (Vandi - Cart)', imageWord: 'cart,bullock' },
+    { char: 'ழ்', sound: 'zha', pronunciation: 'retroflex approximant (special curl)', example: 'தமிழ் (Thamizh - Tamil)', imageWord: 'language,book' },
+    { char: 'ள்', sound: 'l', pronunciation: 'retroflex l (tongue curled back)', example: 'வாள் (Vaal - Sword)', imageWord: 'sword,cartoon' },
+    { char: 'ற்', sound: 'tr / r', pronunciation: 'hard tr or r', example: 'பறவை (Paravai - Bird)', imageWord: 'bird,flying' },
+    { char: 'ன்', sound: 'n', pronunciation: 'alveolar n', example: 'மீன் (Meen - Fish)', imageWord: 'fish,ocean' }
   ];
+
+  const [consonantFlashcardIndex, setConsonantFlashcardIndex] = useState(0);
 
   const intermediateWords = [
     {
@@ -201,7 +204,7 @@ export default function TamilBasics({ user, onLogActivity }) {
 
   const allLetters = [...vowels.map(v => v.char), ...consonants.map(c => c.char)];
 
-  const drawGuidelinesAndLetter = () => {
+  const drawGuidelinesAndLetter = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -237,7 +240,7 @@ export default function TamilBasics({ user, onLogActivity }) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(tracingLetter, canvas.width / 2, canvas.height / 2);
-  };
+  }, [tracingLetter]);
 
   const getCoordinates = (e) => {
     const canvas = canvasRef.current;
@@ -289,7 +292,7 @@ export default function TamilBasics({ user, onLogActivity }) {
     }
   };
 
-  const redrawCanvas = (nextStrokes) => {
+  const redrawCanvas = useCallback((nextStrokes) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -334,7 +337,7 @@ export default function TamilBasics({ user, onLogActivity }) {
       }
       ctx.stroke();
     });
-  };
+  }, [tracingLetter, brushColor, brushSize]);
 
   const handleResetCanvas = () => {
     setStrokes([]);
@@ -451,7 +454,7 @@ export default function TamilBasics({ user, onLogActivity }) {
   const [matchedPairs, setMatchedPairs] = useState([]);
   const [movesCount, setMovesCount] = useState(0);
 
-  const initGame = () => {
+  const initGame = useCallback(() => {
     const basePairs = [
       { char: 'அ', sound: 'a' },
       { char: 'ஆ', sound: 'aa' },
@@ -473,7 +476,7 @@ export default function TamilBasics({ user, onLogActivity }) {
     setFlippedCards([]);
     setMatchedPairs([]);
     setMovesCount(0);
-  };
+  }, []);
 
   const handleCardClick = (cardIndex) => {
     if (flippedCards.length >= 2 || cards[cardIndex].isFlipped || cards[cardIndex].isMatched) return;
@@ -519,26 +522,30 @@ export default function TamilBasics({ user, onLogActivity }) {
   // Trigger draw when tracing subtab is loaded or tracing letter changed
   useEffect(() => {
     if (activeSubTab === 'drawing') {
-      setStrokes([]);
-      setAccuracyScore(null);
-      setAccuracyFeedback('');
+      queueMicrotask(() => {
+        setStrokes([]);
+        setAccuracyScore(null);
+        setAccuracyFeedback('');
+      });
       setTimeout(drawGuidelinesAndLetter, 100);
     }
-  }, [activeSubTab, tracingLetter]);
+  }, [activeSubTab, tracingLetter, drawGuidelinesAndLetter]);
 
   // Redraw strokes when brush parameters change
   useEffect(() => {
     if (activeSubTab === 'drawing' && strokes.length > 0) {
       redrawCanvas(strokes);
     }
-  }, [brushColor, brushSize]);
+  }, [brushColor, brushSize, activeSubTab, redrawCanvas, strokes]);
 
   // Trigger game initialize when game subtab is active
   useEffect(() => {
     if (activeSubTab === 'game') {
-      initGame();
+      queueMicrotask(() => {
+        initGame();
+      });
     }
-  }, [activeSubTab]);
+  }, [activeSubTab, initGame]);
 
   // Vowel signs combinations helper
   const consonantBases = ['க', 'ங', 'ச', 'ஞ', 'ட', 'ண', 'த', 'ந', 'ப', 'ம', 'ய', 'ர', 'ல', 'வ', 'ழ', 'ள', 'ற', 'ன'];
@@ -558,11 +565,13 @@ export default function TamilBasics({ user, onLogActivity }) {
   // Speech helper
   const speakLetter = (text) => {
     // Stop any currently playing audio element
-    if (activeAudio) {
+    if (activeAudioRef.current) {
       try {
-        activeAudio.pause();
-        activeAudio.currentTime = 0;
-      } catch (e) {}
+        activeAudioRef.current.pause();
+        activeAudioRef.current.currentTime = 0;
+      } catch {
+        // Ignore audio playback errors
+      }
     }
 
     if ('speechSynthesis' in window) {
@@ -574,7 +583,7 @@ export default function TamilBasics({ user, onLogActivity }) {
       try {
         const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text)}`;
         const audio = new Audio(audioUrl);
-        activeAudio = audio;
+        activeAudioRef.current = audio;
         audio.play().catch(e => {
           console.warn("Google TTS play failed, trying local synthesis:", e);
           speakLocal(text);
@@ -686,12 +695,43 @@ export default function TamilBasics({ user, onLogActivity }) {
       hint: "Includes vowels, consonants, compound letters, and 1 special letter."
     }
   ];
+  const [comboCount, setComboCount] = useState(0);
+  const [showComboPopup, setShowComboPopup] = useState(false);
+  const [outOfHearts, setOutOfHearts] = useState(false);
 
   const handleAnswerClick = (idx) => {
     if (selectedAnswer !== null) return;
+    if (user?.hearts <= 0) {
+      setOutOfHearts(true);
+      return;
+    }
+
     setSelectedAnswer(idx);
+    
     if (idx === quizQuestions[quizIndex].correct) {
       setQuizScore(prev => prev + 1);
+      const newCombo = comboCount + 1;
+      setComboCount(newCombo);
+      
+      // Award XP
+      if (updateUserGamification) {
+        updateUserGamification({ xp: (user?.xp || 0) + 5 });
+      }
+
+      if (newCombo > 0 && newCombo % 3 === 0) {
+        setShowComboPopup(true);
+        setTimeout(() => setShowComboPopup(false), 2500);
+      }
+    } else {
+      setComboCount(0);
+      // Deduct heart
+      if (updateUserGamification) {
+        const newHearts = Math.max((user?.hearts || 0) - 1, 0);
+        updateUserGamification({ hearts: newHearts });
+        if (newHearts === 0) {
+          setTimeout(() => setOutOfHearts(true), 500);
+        }
+      }
     }
   };
 
@@ -701,6 +741,13 @@ export default function TamilBasics({ user, onLogActivity }) {
       setQuizIndex(prev => prev + 1);
     } else {
       setQuizFinished(true);
+      // Bonus completion XP & Gems
+      if (updateUserGamification) {
+        updateUserGamification({ 
+          xp: (user?.xp || 0) + 20,
+          gems: (user?.gems || 0) + 10
+        });
+      }
     }
   };
 
@@ -712,7 +759,27 @@ export default function TamilBasics({ user, onLogActivity }) {
   };
 
   return (
-    <div className="animate-fade-in" style={{ padding: '10px 0' }}>
+    <div className="animate-fade-in" style={{ padding: '10px 0', position: 'relative' }}>
+      
+      {/* Gamification Overlays */}
+      {showComboPopup && (
+        <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(249, 115, 22, 0.95)', color: 'white', padding: '20px 40px', borderRadius: '50px', zIndex: 9999, boxShadow: '0 20px 40px rgba(249, 115, 22, 0.4)', fontSize: '1.5rem', fontWeight: 800, animation: 'scaleIn 0.3s ease-out', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Sparkles size={32} /> You're on fire! {comboCount} in a row! <Sparkles size={32} />
+        </div>
+      )}
+
+      {outOfHearts && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="glass-panel" style={{ background: 'white', padding: '40px', borderRadius: '16px', maxWidth: '400px', textAlign: 'center', animation: 'scaleIn 0.3s ease-out' }}>
+            <div style={{ fontSize: '4rem', marginBottom: '16px' }}>💔</div>
+            <h2 style={{ fontSize: '1.5rem', margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Out of Hearts!</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>You've made too many mistakes. Take a break, practice in the spelling clinic, or refill your hearts in the Store to continue the quiz!</p>
+            <button onClick={() => { setOutOfHearts(false); resetQuiz(); }} className="btn-primary" style={{ width: '100%', padding: '12px', justifyContent: 'center', fontSize: '1rem' }}>
+              Return to Basics
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Intro Header banner */}
       <div className="glass-panel" style={{ padding: '24px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(13, 148, 136, 0.03) 100%)', border: '1px solid var(--panel-border)', borderRadius: '4px', marginBottom: '24px' }}>
@@ -772,64 +839,152 @@ export default function TamilBasics({ user, onLogActivity }) {
         })}
       </div>
 
-      {/* Vowels Workspace */}
+      {/* Vowels Workspace (Flashcards) */}
       {activeSubTab === 'vowels' && (
-        <div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-            {vowels.map((v, idx) => (
-              <div key={idx} className="glass-panel" style={{ display: 'flex', gap: '14px', alignItems: 'center', background: 'white', padding: '16px', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
-                <div style={{ width: '48px', height: '48px', background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.18)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
-                  {v.char}
-                </div>
-                <div style={{ flexGrow: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Sound: "{v.sound}"</span>
-                    <button 
-                      onClick={() => speakLetter(v.char, v.sound)} 
-                      className="module-action-btn" 
-                      style={{ padding: '4px 6px', border: 'none', background: 'var(--accent-primary-glow)' }}
-                      title="Listen"
-                    >
-                      <Volume2 size={12} style={{ color: 'var(--accent-primary)' }} />
-                    </button>
-                  </div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0 6px 0' }}>{v.pronunciation}</span>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--accent-secondary)' }}>E.g. {v.example}</span>
-                </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(99, 102, 241, 0.1)', position: 'relative' }}>
+            
+            {/* Image Section */}
+            <div style={{ height: '220px', width: '100%', background: '#e2e8f0', position: 'relative' }}>
+              <img 
+                src={`https://loremflickr.com/600/400/${vowels[vowelFlashcardIndex].imageWord},cartoon/all`} 
+                alt={vowels[vowelFlashcardIndex].example}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.6) 100%)' }}></div>
+              <div style={{ position: 'absolute', bottom: '16px', left: '20px', color: 'white' }}>
+                <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, opacity: 0.9 }}>Example</span>
+                <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700 }}>{vowels[vowelFlashcardIndex].example}</h3>
               </div>
+            </div>
+
+            {/* Content Section */}
+            <div style={{ padding: '30px 24px', textAlign: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <button 
+                  onClick={() => setVowelFlashcardIndex(prev => prev > 0 ? prev - 1 : vowels.length - 1)}
+                  className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '20px' }}>
+                  &larr; Prev
+                </button>
+                
+                <div style={{ width: '100px', height: '100px', background: 'var(--accent-primary-glow)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(99, 102, 241, 0.2)', margin: '0 16px' }}>
+                  <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--accent-primary)' }}>{vowels[vowelFlashcardIndex].char}</span>
+                </div>
+                
+                <button 
+                  onClick={() => setVowelFlashcardIndex(prev => prev < vowels.length - 1 ? prev + 1 : 0)}
+                  className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '20px' }}>
+                  Next &rarr;
+                </button>
+              </div>
+
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 700 }}>Sound: "{vowels[vowelFlashcardIndex].sound}"</h4>
+              <p style={{ margin: '0 0 20px 0', fontSize: '0.95rem', color: 'var(--text-muted)' }}>{vowels[vowelFlashcardIndex].pronunciation}</p>
+
+              <button 
+                onClick={() => speakLetter(vowels[vowelFlashcardIndex].char, vowels[vowelFlashcardIndex].sound)}
+                className="btn-primary" 
+                style={{ width: '100%', padding: '14px', borderRadius: '8px', fontSize: '1.05rem', justifyContent: 'center', gap: '8px' }}
+              >
+                <Volume2 size={20} /> Play Pronunciation
+              </button>
+            </div>
+          </div>
+
+          {/* Dots Indicator */}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '500px' }}>
+            {vowels.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setVowelFlashcardIndex(idx)}
+                style={{
+                  width: vowelFlashcardIndex === idx ? '24px' : '8px',
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: vowelFlashcardIndex === idx ? 'var(--accent-primary)' : '#cbd5e1',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                aria-label={`Go to letter ${idx + 1}`}
+              />
             ))}
           </div>
         </div>
       )}
 
-      {/* Consonants Workspace */}
+      {/* Consonants Workspace (Flashcards) */}
       {activeSubTab === 'consonants' && (
-        <div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', textAlign: 'center', maxWidth: '500px' }}>
             Note: Pure Tamil consonants have a dot on top (Pulli - ்) which silences the vowel. When spoken on their own, they represent raw consonant sounds.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-            {consonants.map((c, idx) => (
-              <div key={idx} className="glass-panel" style={{ display: 'flex', gap: '14px', alignItems: 'center', background: 'white', padding: '16px', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
-                <div style={{ width: '48px', height: '48px', background: 'rgba(13, 148, 136, 0.08)', border: '1px solid rgba(13, 148, 136, 0.18)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-secondary)' }}>
-                  {c.char}
-                </div>
-                <div style={{ flexGrow: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Sound: "{c.sound}"</span>
-                    <button 
-                      onClick={() => speakLetter(c.char, c.sound.split(' ')[0])} 
-                      className="module-action-btn" 
-                      style={{ padding: '4px 6px', border: 'none', background: 'rgba(13, 148, 136, 0.08)' }}
-                      title="Listen"
-                    >
-                      <Volume2 size={12} style={{ color: 'var(--accent-secondary)' }} />
-                    </button>
-                  </div>
-                  <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0 6px 0' }}>{c.pronunciation}</span>
-                  <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--accent-primary)' }}>Word: {c.example}</span>
-                </div>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(13, 148, 136, 0.1)', position: 'relative' }}>
+            
+            {/* Image Section */}
+            <div style={{ height: '220px', width: '100%', background: '#e2e8f0', position: 'relative' }}>
+              <img 
+                src={`https://loremflickr.com/600/400/${consonants[consonantFlashcardIndex].imageWord},cartoon/all`} 
+                alt={consonants[consonantFlashcardIndex].example}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.6) 100%)' }}></div>
+              <div style={{ position: 'absolute', bottom: '16px', left: '20px', color: 'white' }}>
+                <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, opacity: 0.9 }}>Example</span>
+                <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700 }}>{consonants[consonantFlashcardIndex].example}</h3>
               </div>
+            </div>
+
+            {/* Content Section */}
+            <div style={{ padding: '30px 24px', textAlign: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <button 
+                  onClick={() => setConsonantFlashcardIndex(prev => prev > 0 ? prev - 1 : consonants.length - 1)}
+                  className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '20px' }}>
+                  &larr; Prev
+                </button>
+                
+                <div style={{ width: '100px', height: '100px', background: 'rgba(13, 148, 136, 0.08)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(13, 148, 136, 0.2)', margin: '0 16px' }}>
+                  <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--accent-secondary)' }}>{consonants[consonantFlashcardIndex].char}</span>
+                </div>
+                
+                <button 
+                  onClick={() => setConsonantFlashcardIndex(prev => prev < consonants.length - 1 ? prev + 1 : 0)}
+                  className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '20px' }}>
+                  Next &rarr;
+                </button>
+              </div>
+
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 700 }}>Sound: "{consonants[consonantFlashcardIndex].sound}"</h4>
+              <p style={{ margin: '0 0 20px 0', fontSize: '0.95rem', color: 'var(--text-muted)' }}>{consonants[consonantFlashcardIndex].pronunciation}</p>
+
+              <button 
+                onClick={() => speakLetter(consonants[consonantFlashcardIndex].char, consonants[consonantFlashcardIndex].sound.split(' ')[0])}
+                className="btn-primary" 
+                style={{ width: '100%', padding: '14px', borderRadius: '8px', fontSize: '1.05rem', justifyContent: 'center', gap: '8px', background: 'var(--accent-secondary)' }}
+              >
+                <Volume2 size={20} /> Play Pronunciation
+              </button>
+            </div>
+          </div>
+
+          {/* Dots Indicator */}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '500px' }}>
+            {consonants.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setConsonantFlashcardIndex(idx)}
+                style={{
+                  width: consonantFlashcardIndex === idx ? '24px' : '8px',
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: consonantFlashcardIndex === idx ? 'var(--accent-secondary)' : '#cbd5e1',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                aria-label={`Go to letter ${idx + 1}`}
+              />
             ))}
           </div>
         </div>
@@ -1371,9 +1526,6 @@ export default function TamilBasics({ user, onLogActivity }) {
         <div className="glass-panel animate-fade-in" style={{ background: 'white', padding: '24px', border: '1px solid var(--panel-border)', borderRadius: '4px', maxWidth: '600px', margin: '0 auto' }}>
           {(() => {
             const currentWordObj = intermediateWords[selectedWordIndex];
-            const isCompleted = wordBuildProgress.length === currentWordObj.breakdown.length;
-            const formedWord = wordBuildProgress.join('');
-            const isCorrect = formedWord === currentWordObj.word;
 
             const handleLetterClick = (letter) => {
               if (wordBuildProgress.length < currentWordObj.breakdown.length) {
@@ -1599,8 +1751,6 @@ export default function TamilBasics({ user, onLogActivity }) {
               {(() => {
                 const targetObj = advancedSentences[selectedSentenceIndex];
                 const cleanTargetParts = targetObj.sentence.split(' ');
-                const isCorrect = sentenceBuildProgress.join(' ') === targetObj.sentence;
-                const isFinished = sentenceBuildProgress.length === cleanTargetParts.length;
 
                 const handleWordClick = (word) => {
                   if (sentenceBuildProgress.length < cleanTargetParts.length) {
