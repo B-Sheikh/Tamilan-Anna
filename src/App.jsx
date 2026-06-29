@@ -647,7 +647,7 @@ Analyze their performance and write a concise, encouraging 2-sentence summary in
             </h2>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={() => setShowTeacherModal(true)} className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
+            <button onClick={() => setShowTeacherModal(true)} className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.85rem' }} disabled>
               Join as Teacher
             </button>
             <button onClick={() => { setIsRegisterMode(false); setLoginError(null); setShowLogin(true); }} className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.85rem', background: 'var(--accent-primary)', color: 'white', border: 'none' }}>
